@@ -6,12 +6,16 @@
  * @require widgets/Viewer.js
  * @require plugins/OLSource.js
  * @require plugins/OSMSource.js
- * @require WPSDemo.js
+ */
+ 
+// Change/Remove the below block to include or exclude whatever demo you want, all demos ptype should be 'app_demo'
+/**
+ * @require AgentDemo.js
  */
 
 var app = new gxp.Viewer({
     // Our custom plugin that provides drawing and processing actions
-    tools: [{ ptype: "app_wpsdemo" }],
+    tools: [{ ptype: "app_demo" }],
     sources: {
         osm: { ptype: "gxp_osmsource" },
         ol: { ptype: "gxp_olsource" }
