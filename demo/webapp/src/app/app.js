@@ -10,7 +10,7 @@
  
 // Change/Remove the below block to include or exclude whatever demo you want, all demos ptype should be 'app_demo'
 /**
- * @require AgentDemo.js
+ * @require AreaGrowthDemo.js
  */
 
 var app = new gxp.Viewer({
