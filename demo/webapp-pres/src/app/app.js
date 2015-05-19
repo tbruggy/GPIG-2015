@@ -10,6 +10,7 @@
  * @require core/AgentTracker.js
  * @require core/PossibleTargetPositions.js
  * @require additional/Attractors.js
+ * @require additional/DB_PushPop.js
  */
 
 var app = new gxp.Viewer({
@@ -27,6 +28,11 @@ var app = new gxp.Viewer({
       { 
         ptype: "app_opt_attactors",
         id: "attactors",
+        target_pos: "possible-target-positions",
+      }, 
+      { 
+        ptype: "app_db_pushpop",
+        id: "db_pushpop",
         target_pos: "possible-target-positions",
       }
     ],

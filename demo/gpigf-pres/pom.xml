@@ -19,6 +19,7 @@
 		<module>gpigf-pres-aoi-envobs</module>
 		<module>gpigf-pres-poi-structures</module>
 		<module>gpigf-pres-poi-sightings</module>
+		<module>gpigf-pres-db-pushpop</module>
 	</modules>
 
 	<build>
