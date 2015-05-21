@@ -30,12 +30,40 @@ public class EnvObstacles extends StaticMethodsProcessFactory<EnvObstacles>
 	@DescribeProcess(title = "processEnvObstacles", description = "Calculates new size of target areas based upon environmental obstacles")
 	@DescribeResult(description = "Modified target areas")
 	public static GeometryCollection processEnvObstacles(
-			@DescribeParameter(name = "target_areas", description = "Target area polygon") GeometryCollection target_areas) {
+			@DescribeParameter(name = "target_areas", description = "Target area polygon") GeometryCollection target_areas,
+			@DescribeParameter(name = "road_growth", description = "Growth along roads") int road_growth,
+			@DescribeParameter(name = "area_growth", description = "Polygon Growth") int area_growth,
+			@DescribeParameter(name = "ext_target_area", description = "Distance to check for roads") int ext_target_area) {
 		
-		if (target_areas == null || target_areas.getNumGeometries() == 0)
+		if (target_areas == null || target_areas.getNumGeometries() == 0) {
 			throw new IllegalArgumentException("target_areas is null or zero in size");
+		}
 		
-		return GetRoads(target_areas);
+		GeometryCollection roads = GetRoads(target_areas);
+		List<Geometry> geometryOutput = new ArrayList<Geometry>();
+		
+		for (int i = 0; i < target_areas.getNumGeometries(); i++) {
+			Geometry area = target_areas.getGeometryN(i);
+			Geometry bufferedArea = area.buffer(area_growth,5);
+			Geometry largerArea = area.buffer(ext_target_area,5);
+			
+			List<Geometry> output = new ArrayList<Geometry>();
+			output.add(bufferedArea);
+			
+			for (int j = 0; j < roads.getNumGeometries(); j++) {
+				Geometry road = roads.getGeometryN(j);
+				if (largerArea.intersects(road)) {
+					Geometry intersection = largerArea.intersection(road);
+					Geometry bufferedRoad = intersection.buffer(road_growth, 5);
+					output.add(bufferedRoad);
+				}
+			}
+			
+			Geometry union = area.getFactory().createGeometryCollection(GeometryFactory.toGeometryArray(output)).union();
+			geometryOutput.add(union);
+		}
+		
+		return target_areas.getFactory().createGeometryCollection(GeometryFactory.toGeometryArray(geometryOutput));
 	}
 	
 	private static java.sql.Connection conn;
@@ -65,7 +93,7 @@ public class EnvObstacles extends StaticMethodsProcessFactory<EnvObstacles>
 		
 		try {
 			Statement qs = conn.createStatement();
-			ResultSet r = qs.executeQuery("select st_astext(st_buffer(st_transform(ST_LineMerge(geom),3857), 10)) from nyc_roads");
+			ResultSet r = qs.executeQuery("select st_astext(st_transform(ST_LineMerge(geom),3857)) from nyc_roads");
 			
 			while (r.next()) {
 				String wkt = (String)r.getObject(1);

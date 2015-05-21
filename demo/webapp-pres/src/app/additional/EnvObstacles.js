@@ -43,7 +43,7 @@ var attractors = Ext.extend(gpigf.plugins.Tool, {
         new GeoExt.Action(Ext.apply({
           text: 'Load Roads',
           control: new OpenLayers.Control.DrawFeature(
-            this.layer, OpenLayers.Handler.Point, {
+            this.layer, OpenLayers.Handler.Polygon, {
             eventListeners: {
               featureadded: this.processEnvObstacles,
               scope: this
@@ -62,10 +62,15 @@ var attractors = Ext.extend(gpigf.plugins.Tool, {
           process: 'gpigf:processEnvObstacles',
           inputs: {
             target_areas: polys,
+            road_growth: 20,
+            area_growth: 5,
+            ext_target_area: 50
           },
           success: this.addResult,
           scope: this
     });
+      
+    this.layer.removeFeatures(polys);
 },
 
 addResult: function(outputs) {
