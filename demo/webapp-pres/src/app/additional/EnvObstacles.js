@@ -57,11 +57,23 @@ var attractors = Ext.extend(gpigf.plugins.Tool, {
                             scope: this
                         }
                     })
+                }, actionDefaults)),
+                new GeoExt.Action(Ext.apply({
+                    text: 'Grow',
+                    control: new OpenLayers.Control.SelectFeature(this.layer,
+                    {
+                        clickout: true, toggle: false,
+                        multiple: false, hover: false,
+                        eventListeners: {
+                            featurehighlighted: this.processEnvObstacles,
+                            scope: this
+                        }
+                    })
                 }, actionDefaults))
             ]);
         }, this);
     },
-
+    
     processEnvObstacles: function(evt) {
         var polys = evt.feature;
   
