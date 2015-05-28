@@ -20,6 +20,7 @@
 		<module>gpigf-pres-poi-structures</module>
 		<module>gpigf-pres-poi-sightings</module>
 		<module>gpigf-pres-db-pushpop</module>
+		<module>gpigf-pres-db-agents</module>
 	</modules>
 
 	<build>

@@ -40,7 +40,7 @@ public class AgentStore extends StaticMethodsProcessFactory<AgentStore> {
 		
 		try {
 			if (out == null) {
-				out = new PrintWriter(new BufferedWriter(new FileWriter("C:\\Users\\Jack\\Desktop\\out3.log", false)), true);
+				out = new PrintWriter(new BufferedWriter(new FileWriter("C:\\Users\\Paul\\Desktop\\out3.log", false)), true);
 			}
 		} catch (IOException ex) {
 			ex.printStackTrace();
@@ -50,7 +50,7 @@ public class AgentStore extends StaticMethodsProcessFactory<AgentStore> {
 
 		try {
 			Class.forName("org.postgresql.Driver"); 
-			String url = "jdbc:postgresql://localhost:5432/RoadsDB"; 
+			String url = "jdbc:postgresql://localhost:5432/GPIGF"; 
 			conn = DriverManager.getConnection(url, "postgres", "geoserver"); 
 			
 			//if(!(conn instanceof org.postgresql.jdbc4.Jdbc4Connection))
@@ -195,14 +195,10 @@ public class AgentStore extends StaticMethodsProcessFactory<AgentStore> {
 			@DescribeParameter(name = "new_positions", description = "New positions of agents") GeometryCollection new_positions,
 			@DescribeParameter(name = "agent_vision", description = "Radius of agents vision") int agent_vision) 
 					throws IllegalArgumentException {
-		
 		out.println("Called");
-		out.flush();
 
-		
 		if (target_areas == null || previous_positions == null || new_positions == null)
 			out.println("null");
-		
 		
 		out.println("target_areas : " + target_areas.toText());
 		out.println("previous_positions : " + previous_positions.toText());
@@ -212,36 +208,36 @@ public class AgentStore extends StaticMethodsProcessFactory<AgentStore> {
 		if (target_areas == null || target_areas.getNumGeometries() == 0)
 			throw new IllegalArgumentException("target_areas is null or zero in size");
 		
-		
 		List<Geometry> paths = new ArrayList<Geometry>();
 		for (int i=0; i < previous_positions.getNumGeometries(); ++i){
 			Geometry previous_pos = previous_positions.getGeometryN(i);
 			Geometry next_pos = new_positions.getGeometryN(i);
-			Coordinate[] line_coords = new Coordinate[2];
-			line_coords[0]=previous_pos.getCoordinate();
-			line_coords[1]=next_pos.getCoordinate();
 			
-			LineString path = new LineString(line_coords,new PrecisionModel(),0);
-			Geometry visioned_path = path.buffer(agent_vision,5);
+			Coordinate[] line_coords = new Coordinate[2];
+			line_coords[0] = previous_pos.getCoordinate();
+			line_coords[1] = next_pos.getCoordinate();
+			
+			LineString path = new LineString(line_coords, new PrecisionModel(), 0);
+			Geometry visioned_path = path.buffer(agent_vision, 5);
+			
 			paths.add(visioned_path);
 		}
+
+		Geometry agent_paths = toGeometryCollection(target_areas, paths).union();
 		
 		out.println("place 1");
-//		
 		List<Geometry> output = new ArrayList<Geometry>();
-//
+		
 		for (int i = 0; i < target_areas.getNumGeometries(); ++i) {
-			Geometry new_area = target_areas.getGeometryN(i);
-			for (int j=0; j<paths.size(); ++j){
-				new_area = new_area.difference(paths.get(j));
-			}
-
-			output.add(new_area);
+			Geometry target_area = target_areas.getGeometryN(i);
+			output.add(target_area.difference(agent_paths));
 		}
 
 		out.println("place 2");
 		return target_areas.getFactory().createGeometryCollection(GeometryFactory.toGeometryArray(output));
-		//return target_areas;
 	}
-
+	
+	private static GeometryCollection toGeometryCollection(Geometry geometry, List<Geometry> geometryList) {
+		return geometry.getFactory().createGeometryCollection(GeometryFactory.toGeometryArray(geometryList));
+	}
 }

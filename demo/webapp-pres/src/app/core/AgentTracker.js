@@ -15,6 +15,10 @@ var agenttracker = Ext.extend(gpigf.plugins.Tool, {
 
   ptype: 'app_core_agenttracker',
   
+  pushAgentsBtn: null,
+  registered: false,
+  throttle: 0,
+  
   /** Initialization of the plugin */
   init: function(target) {
     agenttracker.superclass.init.apply(this, arguments);
@@ -33,6 +37,21 @@ var agenttracker = Ext.extend(gpigf.plugins.Tool, {
         name: 'sketch',
         source: 'ol'
       }).getLayer();
+      
+      this.agentLayer = target.getLayerRecordFromMap({
+        name: 'agents',
+        source: 'ol'
+      }).getLayer();
+      this.agentLayer.style = {
+        strokeColor : '#FF0000',
+        strokeWidth: 10,
+        pointRadius: 15
+      };
+      
+      this.pushAgentsBtn = new OpenLayers.Control.Button({
+        trigger: OpenLayers.Function.bind(this.pushAgents, this)
+      });
+      
       // Some defaults
       var actionDefaults = {
         map: target.mapPanel.map,
@@ -42,43 +61,142 @@ var agenttracker = Ext.extend(gpigf.plugins.Tool, {
       };
       this.addActions([
         new GeoExt.Action(Ext.apply({
-          text: 'Draw Agent Path',
-          control: new OpenLayers.Control.DrawFeature(
-            this.layer, OpenLayers.Handler.Path, {
-            eventListeners: {
-              featureadded: function(evt) {
-                this.queueFeatureAddition({ 
-                  func: this.addAgentPath, 
-                  scope: this,
-                  data: evt
-                });
-              },
-              scope: this
-            }
+          text: 'Start Agents',
+          control: new OpenLayers.Control.Button({
+            trigger: OpenLayers.Function.bind(this.startAgents, this)
           })
         }, actionDefaults))
       ]);
     }, this);
   },
-
-  addAgentPath: function(polys, evt) {
-    var line = evt.feature;
-    
-    // Remove the line that was drawn from the layer.
-    this.layer.removeFeatures([line]);
-    
-    // Todo add a marker to the layer representing the agent's current position.
-    // A pin perhaps, like the red pins seen on google maps.
   
+  startAgents: function() { 
+    if (!this.registered) {
+      // Get the first row from agents DB first
+      this.positionNumber = 1;
+      
+      this.getAgentsPending = false;
+      this.digPending = false;
+      
+      this.wpsClient.execute({
+        server: 'local',
+        process: 'gpigf:popPosition',
+        inputs: {
+          posNum: this.positionNumber
+        },
+        success: this.initFirstAgents,
+        scope: this
+      });
+    }
+    
+    this.registered = true;
+  },
+  
+  /* this should only be called once */
+  initFirstAgents: function(outputs) {
+    if (outputs.result == undefined) {
+			throw "Unexpected outputs result";
+		}
+    
+		this.agentsArray = outputs.result;
+    
+    this.agentLayer.removeAllFeatures();
+    this.agentLayer.addFeatures(this.agentsArray);
+    
+    this.registerThinkCallback({ 
+      func: this.think, 
+      scope: this
+    });
+    
+    Ext.TaskMgr.start({
+      run: this.updateAgents,
+      interval: 1000,
+      scope: this
+    }); 
+  },
+  
+  think: function() {
+    this.queueFeatureAddition({
+      func: this.dig,
+      scope: this
+    });
+  },
+  
+  updateAgents: function() {
+    if (this.getAgentsPending) {
+      return;
+    }
+    
+    this.getAgentsPending = true;
+    
+    this.wpsClient.execute({
+      server: 'local',
+      process: 'gpigf:popPosition',
+      inputs: {
+        posNum: this.positionNumber
+      },
+      success: this.poppedResult,
+      scope: this
+    });
+    
+    this.positionNumber ++;
+  },
+  
+  // Current agent positions
+  agentsArray : [],
+  // Index used in the adding of agents to the array, before they are pushed
+  agentsArrayIndex : 0,
+  // Position number used to iterate through positions in the database
+  positionNumber : 1,
+  // The agent positions 1 timestep before the current ones
+  lastArray: [],
+  digPending: false,
+  getAgentsPending: false,
+  
+  dig: function(polys, data) {
+    if (!this.digPending) {
+      // Dirty hack to keep the area around an agent clear
+      // note that previous_positions == new_positions
+      return this.wpsClient.getProcess(
+        'local', 'gpigf:agentDigArea'
+      ).configure({
+        inputs: {
+          target_areas: polys,
+          previous_positions: this.agentsArray,
+          new_positions: this.agentsArray,
+          agent_vision: 100
+        }
+      }).output();
+    }
+    
+    this.digPending = false;
+    
+    this.agentLayer.removeAllFeatures();
+    this.agentLayer.addFeatures(this.agentsArray);
+    
     return this.wpsClient.getProcess(
-      'local', 'gpigf:processAgentPath'
+      'local', 'gpigf:agentDigArea'
     ).configure({
       inputs: {
         target_areas: polys,
-        agent_path: line,
-        agent_vision: 10 * this.target.mapPanel.map.getResolution(),
-      },
+        previous_positions: this.lastArray,
+        new_positions: this.agentsArray,
+        agent_vision: 100
+      }
     }).output();
+  },
+  
+  poppedResult: function(outputs) {
+    if (outputs.result == undefined) {
+      // No more rows from the database, stop
+      return;
+    }
+    
+    this.lastArray = this.agentsArray;
+    this.agentsArray = outputs.result;
+    
+    this.getAgentsPending = false;
+    this.digPending = true;
   },
   
   // TODO other plugins (e.g. communication plugins) may need this plugin to expose 

@@ -68,6 +68,11 @@ var app = new gxp.Viewer({
             source: "ol",
             name: "envObstaclesLayer",
             type: "OpenLayers.Layer.Vector"
+        }, {
+            // A vector layer to display agents
+            source: "ol",
+            name: "agents",
+            type: "OpenLayers.Layer.Vector"
         }],
         items: [{
             xtype: "gx_zoomslider",
