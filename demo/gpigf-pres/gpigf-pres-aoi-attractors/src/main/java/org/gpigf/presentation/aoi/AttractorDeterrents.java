@@ -1,5 +1,9 @@
 package org.gpigf.presentation.aoi;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -40,18 +44,29 @@ public class AttractorDeterrents extends StaticMethodsProcessFactory<AttractorDe
   @DescribeResult(description = "Geometry collection created by creating a linestring to the attractor")
   public static GeometryCollection addAttractor(
       @DescribeParameter(name = "polygon", description = "Polygon to be unioned2") GeometryCollection poly,
-      @DescribeParameter(name = "line", description = "Second geometry to union") Geometry point) {
+      @DescribeParameter(name = "points", description = "Second geometry to union") GeometryCollection points,
+      @DescribeParameter(name = "buffer", description = "Buffer size of attractor line") int buffer) {
       
 	  List<Geometry> geometries = new ArrayList<Geometry>();
 	  
-	  for(int i = 0; i < poly.getNumGeometries(); i++) {
-		  Geometry polygon = poly.getGeometryN(i);
+	  for(int j = 0; j < poly.getNumGeometries(); j++) {
+	  
+		  Geometry polygon = poly.getGeometryN(j);
 		  Coordinate[] var = new Coordinate[2];
 		  var[0] = polygon.getCentroid().getCoordinate();
-		  var[1] = point.getCentroid().getCoordinate();
 		  
-		  LineString l = new LineString(var,new PrecisionModel(),0);  
-		  geometries.add(l.intersection(polygon).buffer(polygon.getLength()/50,10).union(polygon));  
+		  List<Geometry> pointIntersections = new ArrayList<Geometry>();
+		  
+		  for (int i = 0; i < points.getNumGeometries(); i++) {
+			  Geometry point = points.getGeometryN(i);
+			  var[1] = point.getCentroid().getCoordinate();
+			  
+			  LineString l = new LineString(var,new PrecisionModel(),0);  
+			  pointIntersections.add(l.intersection(polygon).buffer(buffer, 5));
+		  }
+		  
+		  pointIntersections.add(polygon);
+		  geometries.add(toGeometryCollection(poly, pointIntersections).union());
 	  }
 	  
 	  return toGeometryCollection(poly, geometries);
@@ -77,5 +92,7 @@ public class AttractorDeterrents extends StaticMethodsProcessFactory<AttractorDe
   private static GeometryCollection toGeometryCollection(Geometry geometry, List<Geometry> geometryList) {
 	return geometry.getFactory().createGeometryCollection(GeometryFactory.toGeometryArray(geometryList));
 }
+  
+  
   
 }

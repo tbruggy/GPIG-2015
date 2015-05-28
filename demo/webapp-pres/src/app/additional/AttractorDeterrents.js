@@ -129,22 +129,21 @@ var WPSDemo = Ext.extend(gpigf.plugins.Tool, {
     },
     
     think: function() {
-        for(i = 0; i < this.attractors.length; i++) {
-            this.queueFeatureAddition({
-                func: this.processAttractor,
-                scope: this,
-                data: this.attractors[i]
-            });
-        }
+        this.queueFeatureAddition({
+            func: this.processAttractor,
+            scope: this,
+            data: this.attractors
+        });
     },
     
-    processAttractor: function(polys, attractor) {
+    processAttractor: function(polys, attractors) {
         return this.wpsClient.getProcess(
             'local', 'gpigf:addAttractor'
         ).configure({
             inputs: {
                 polygon: polys,
-                line: attractor 
+                points: attractors,
+                buffer: 10
             }
         }).output();
     },
