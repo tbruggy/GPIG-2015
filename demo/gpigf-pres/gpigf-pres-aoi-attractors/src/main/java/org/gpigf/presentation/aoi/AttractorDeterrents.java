@@ -85,24 +85,6 @@ public class AttractorDeterrents extends StaticMethodsProcessFactory<AttractorDe
 	      @DescribeParameter(name = "buffer", description = "Buffer size of deterrant line") int buffer,
 	      @DescribeParameter(name = "minLength", description = "maximum length of deterrant effect") double minLength) {
 	  
-  	/*List<Geometry> geometries = new ArrayList<Geometry>();
-	  
-	  for(int j = 0; j < poly.getNumGeometries(); j++) {
-	  
-		  Geometry polygon = poly.getGeometryN(j);
-		  
-		  for (int i = 0; i < points.getNumGeometries(); i++) {
-			  Geometry point = points.getGeometryN(i);
-
-			  polygon = polygon.difference(point.buffer(buffer, 5));
-		  }
-		  
-		  geometries.add(polygon);
-	  }
-	  
-	  return toGeometryCollection(poly, geometries);*/
-	  
-
 	  List<Geometry> geometries = new ArrayList<Geometry>();
 	  
 	  for(int j = 0; j < poly.getNumGeometries(); j++) {

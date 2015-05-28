@@ -145,7 +145,27 @@ var attractorsDeterrants = Ext.extend(gpigf.plugins.Tool, {
         }).output();
     },
 
+<<<<<<< HEAD
     processDeterrents: function(polys, deterrants) {
+=======
+    /** Handler function for splitting geometries */
+    addDeterrant: function(evt) {
+        var line = evt.feature;
+        
+        this.detterants.push(line);
+        
+        if (this.registered == false) {
+            this.registerThinkCallback({ 
+                  func: this.think, 
+                  scope: this
+            });
+            
+            this.registered = true;
+        }
+    },
+
+    processDeterrents: function(polys, detterants) {
+>>>>>>> origin/master
         return this.wpsClient.getProcess(
             'local', 'gpigf:addDeterrant'
         ).configure({
