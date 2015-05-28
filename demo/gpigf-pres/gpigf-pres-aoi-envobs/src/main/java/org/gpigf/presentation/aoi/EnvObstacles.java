@@ -42,7 +42,7 @@ public class EnvObstacles extends StaticMethodsProcessFactory<EnvObstacles>
 		startDBConnection();
 		
 		try {
-			PreparedStatement statement = conn.prepareStatement("INSERT into save (large_poly) VALUES (?)");
+			PreparedStatement statement = conn.prepareStatement("INSERT into env_obstacles (geom) VALUES (?)");
 			
 			for (int i = 0; i < target_areas.getNumGeometries(); ++i) {
 				Geometry geometry = target_areas.getGeometryN(i);
@@ -140,7 +140,7 @@ public class EnvObstacles extends StaticMethodsProcessFactory<EnvObstacles>
 	
 	private static GeometryCollection getEnvironmentalObstacles(GeometryFactory factory) {
 		out.println("Attempting to get env obstacles");
-		List<Geometry> output = getGeometries("SELECT st_astext(large_poly) as poly FROM save");
+		List<Geometry> output = getGeometries("SELECT st_astext(geom) as poly FROM env_obstacles");
 		out.println("Finished getting env obstacles");
 		return factory.createGeometryCollection(GeometryFactory.toGeometryArray(output));
 	}
