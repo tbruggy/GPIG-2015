@@ -52,7 +52,7 @@ public class AppTest
 		geometryList.add(new GeometryFactory().createPolygon(coordinates));
 		GeometryCollection area = new GeometryFactory().createGeometryCollection(GeometryFactory.toGeometryArray(geometryList));
 		
-        EnvObstacles.processEnvObstacles(area, 0, 0, 0, 0);
+        //EnvObstacles.processEnvObstacles(area, 0);
     }
     
     public void testsaveEnvObstacles()

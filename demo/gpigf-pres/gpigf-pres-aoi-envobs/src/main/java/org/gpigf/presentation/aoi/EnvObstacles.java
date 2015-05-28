@@ -64,13 +64,11 @@ public class EnvObstacles extends StaticMethodsProcessFactory<EnvObstacles>
 		return target_areas;
 	}
 	
-	@DescribeProcess(title = "processEnvObstacles", description = "Calculates new size of target areas based upon environmental obstacles")
+	@DescribeProcess(title = "processRoads", description = "Calculates new size of target areas based upon roads")
 	@DescribeResult(description = "Modified target areas")
-	public static GeometryCollection processEnvObstacles(
+	public static GeometryCollection processRoads(
 			@DescribeParameter(name = "target_areas", description = "Target area polygon") GeometryCollection target_areas,
 			@DescribeParameter(name = "road_growth", description = "Growth along roads") int road_growth,
-			@DescribeParameter(name = "area_growth", description = "Polygon Growth") int area_growth,
-			@DescribeParameter(name = "env_obstacle_growth", description = "Growth in environmental obstacles") int env_obstacle_growth,
 			@DescribeParameter(name = "ext_target_area", description = "Distance to check for roads") int ext_target_area) {
 		
 		if (target_areas == null || target_areas.getNumGeometries() == 0) {
@@ -81,7 +79,6 @@ public class EnvObstacles extends StaticMethodsProcessFactory<EnvObstacles>
 		startDBConnection();
 		
 		GeometryCollection roads = getRoads(target_areas.getFactory());
-		GeometryCollection envObstacles = getEnvironmentalObstacles(target_areas.getFactory());
 		
 		List<Geometry> geometryOutput = new ArrayList<Geometry>();
 		
@@ -102,31 +99,30 @@ public class EnvObstacles extends StaticMethodsProcessFactory<EnvObstacles>
 				}
 			}
 			
-			List<Geometry> obstacleIntersections = new ArrayList<Geometry>();
-			out.println("Detecting environmental obstacle intersections");
-			
-			for (int j = 0; j < envObstacles.getNumGeometries(); j++) {
-				Geometry obstacle = envObstacles.getGeometryN(j);
-				if (area.intersects(obstacle)) {
-					Geometry intersection = area.intersection(obstacle);
-					obstacleIntersections.add(intersection);
-					out.println("Environmental obstacle intersection detected");
-				}
-			}
-			
-			if (obstacleIntersections.size() > 0) {
-				Geometry envObstacleIntersections = toGeometryCollection(area, obstacleIntersections).union();
-				Geometry remaining = area.difference(envObstacleIntersections);
-				
-				// Grow the regular area and the areas in environmental obstacles at different rates
-				output.add(envObstacleIntersections.buffer(env_obstacle_growth, 5));
-				output.add(remaining.buffer(area_growth, 5));
-			} else {
-				output.add(area.buffer(area_growth, 5));
-			}
-			
+			output.add(area);
 			geometryOutput.add(toGeometryCollection(area, output).union());
 		}
+		
+		return toGeometryCollection(target_areas, geometryOutput);
+	}
+		
+	@DescribeProcess(title = "processEnvObstacles", description = "Calculates new size of target areas based upon environmental obstacles")
+	@DescribeResult(description = "Modified target areas")
+	public static GeometryCollection processEnvObstacles(
+			@DescribeParameter(name = "target_areas", description = "Target area polygon") GeometryCollection target_areas,
+			@DescribeParameter(name = "env_obstacles", description = "Growth along roads") GeometryCollection env_obstacles) {
+			
+			if (target_areas == null || target_areas.getNumGeometries() == 0) {
+				throw new IllegalArgumentException("target_areas is null or zero in size");
+			}
+			
+			List<Geometry> geometryOutput = new ArrayList<Geometry>();
+			Geometry obstacles = env_obstacles.union();
+			
+			for (int i = 0; i < target_areas.getNumGeometries(); i++) {
+				Geometry area = target_areas.getGeometryN(i);
+				geometryOutput.add(area.difference(obstacles));
+			}
 		
 		return toGeometryCollection(target_areas, geometryOutput);
 	}
@@ -137,14 +133,7 @@ public class EnvObstacles extends StaticMethodsProcessFactory<EnvObstacles>
 	private static GeometryCollection toGeometryCollection(Geometry geometry, List<Geometry> geometryList) {
 		return geometry.getFactory().createGeometryCollection(GeometryFactory.toGeometryArray(geometryList));
 	}
-	
-	private static GeometryCollection getEnvironmentalObstacles(GeometryFactory factory) {
-		out.println("Attempting to get env obstacles");
-		List<Geometry> output = getGeometries("SELECT st_astext(geom) as poly FROM env_obstacles");
-		out.println("Finished getting env obstacles");
-		return factory.createGeometryCollection(GeometryFactory.toGeometryArray(output));
-	}
-	
+		
 	private static GeometryCollection getRoads(GeometryFactory factory) {
 		out.println("Attempting to get roads");
 		List<Geometry> output = getGeometries("SELECT st_astext(st_transform(ST_LineMerge(geom),3857)) FROM nyc_roads");

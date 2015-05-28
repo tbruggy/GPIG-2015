@@ -9,99 +9,123 @@
  * @require gpigf/Tool.js
  */
 
+var obstacleLayerStyle = OpenLayers.Util.applyDefaults(obstacleLayerStyle, OpenLayers.Feature.Vector.style['default']);
+obstacleLayerStyle.fillColor = "#8eafbc";
+obstacleLayerStyle.strokeColor = '#5e8d9f';
+obstacleLayerStyle.strokeWidth = 1;
+
 var envObstacles = Ext.extend(gpigf.plugins.Tool, {
     
     ptype: 'app_env_obstacles',
     registered: false,
+    drawAlongRoads: false,
+    environmentalObstacles: [],
       
     /** Initialization of the plugin */
     init: function(target) {
         envObstacles.superclass.init.apply(this, arguments);
 
-        // Create a WPSClient instance for use with the local GeoServer
         this.wpsClient = new OpenLayers.WPSClient({
             servers: {
                 local: '/geoserver/wps'
             }
         });
 
-        // Add action buttons when the viewer is ready
         target.on('ready', function() {
-            // Get a reference to the vector layer from app.js
             this.layer = target.getLayerRecordFromMap({
                 name: 'sketch',
                 source: 'ol'
             }).getLayer();
-            // Some defaults
+            
+            this.envObstaclesLayer = target.getLayerRecordFromMap({
+                name: 'envObstaclesLayer',
+                source: 'ol'
+            }).getLayer();
+            
+            this.envObstaclesLayer.style = obstacleLayerStyle;
+            
             var actionDefaults = {
                 map: target.mapPanel.map,
                 enableToggle: true,
                 toggleGroup: this.ptype,
                 allowDepress: true
             };
+            
             this.addActions([
                 new GeoExt.Action(Ext.apply({
-                    text: 'Grow with Environmetal Obstacles',
+                    text: 'Grow along Roads',
                     control: new OpenLayers.Control.Button({
-                        trigger: OpenLayers.Function.bind(this.toggleEnvObstacles, this)
+                        trigger: OpenLayers.Function.bind(this.toggleRoads, this)
+                    })
+                }, actionDefaults)),
+                new GeoExt.Action(Ext.apply({
+                    text: 'Draw Environmetal Obstacle',
+                    control: new OpenLayers.Control.DrawFeature(
+                        this.envObstaclesLayer, OpenLayers.Handler.Polygon, {
+                        eventListeners: {
+                            featureadded: this.addEnvironmentalObstacles,
+                            scope: this
+                        }
                     })
                 }, actionDefaults))
             ]);
         }, this);
-    },
-    
-    toggleEnvObstacles: function() {
-        if (this.registered == false) {
-            this.registerThinkCallback({ 
-                  func: this.think, 
-                  scope: this
-            });
-            
-            this.registered = true;
-        } else {
-            //Ext.TaskMgr.stop(this.task);
-            //this.task = null;
-        }   
-    },
-    
-    think: function() {
-        this.queueFeatureAddition({
-            func: this.processEnvObstacles,
-            scope: this,
-            data: null
+        
+        this.registerThinkCallback({ 
+            func: this.think, 
+            scope: this
         });
     },
     
-    processEnvObstacles: function(polys, data) {
+    toggleRoads: function() {
+        this.drawAlongRoads = !this.drawAlongRoads;
+    },
+    
+    addEnvironmentalObstacles: function(evt) {
+        var polygon = evt.feature;
+        this.environmentalObstacles.push(polygon);
+    },
+    
+    think: function() {
+        if (this.drawAlongRoads) {
+            this.queueFeatureAddition({
+                func: this.processRoads,
+                scope: this
+            });
+        }
+        
+        if (this.environmentalObstacles.length > 0) {
+            this.queueFeatureAddition({
+                func: this.processEnvironmentalObstacles,
+                data: this.environmentalObstacles,
+                scope: this
+            });
+        }
+    },
+    
+    processRoads: function(polys, data) {
+        return this.wpsClient.getProcess(
+            'local', 'gpigf:processRoads'
+        ).configure({
+            inputs: {
+                target_areas: polys,
+                road_growth: 20,
+                ext_target_area: 50
+            }
+        }).output();
+    },
+    
+    processEnvironmentalObstacles: function(polys, obstacles) {
         return this.wpsClient.getProcess(
             'local', 'gpigf:processEnvObstacles'
         ).configure({
             inputs: {
                 target_areas: polys,
-                road_growth: 20,
-                area_growth: 5,
-                ext_target_area: 50,
-                env_obstacle_growth: 1
+                env_obstacles: obstacles
             }
         }).output();
-    },
-    
-    saveEnvObstacles: function(evt) {
-        var polys = evt.feature;
-  
-        this.wpsClient.execute({
-            server: 'local',
-            process: 'gpigf:saveEnvObstacles',
-            inputs: {
-                target_areas: polys
-            },
-            success: console.log('environmental obstacle saved'),
-            scope: this
-        });
-      
-        this.layer.removeFeatures(polys);
     }
-          
+    
 });
 
 Ext.preg(envObstacles.prototype.ptype, envObstacles);

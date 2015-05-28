@@ -9,8 +9,6 @@
  *
  * @require core/AgentTracker.js
  * @require core/PossibleTargetPositions.js
- * @require additional/Attractors.js
- * @require additional/DB_PushPop.js
  * @require additional/EnvObstacles.js
  * @require additional/AttractorDeterrents.js
  */
@@ -27,16 +25,6 @@ var app = new gxp.Viewer({
         id: "agent-tracker",
         target_pos: "possible-target-positions",
       }, 
-      { 
-        ptype: "app_opt_attactors",
-        id: "attactors",
-        target_pos: "possible-target-positions",
-      }, 
-      { 
-        ptype: "app_db_pushpop",
-        id: "db_pushpop",
-        target_pos: "possible-target-positions",
-      },
       { 
         ptype: "app_env_obstacles",
         id: "env_obstacles",
@@ -64,6 +52,21 @@ var app = new gxp.Viewer({
             // A vector layer to display our geometries and processing results
             source: "ol",
             name: "sketch",
+            type: "OpenLayers.Layer.Vector"
+        }, {
+            // A vector layer to display attractors
+            source: "ol",
+            name: "attractorsLayer",
+            type: "OpenLayers.Layer.Vector"
+        }, {
+            // A vector layer to display deterrants
+            source: "ol",
+            name: "deterrantsLayer",
+            type: "OpenLayers.Layer.Vector"
+        }, {
+            // A vector layer to display environmental obstacles
+            source: "ol",
+            name: "envObstaclesLayer",
             type: "OpenLayers.Layer.Vector"
         }],
         items: [{
