@@ -55,7 +55,7 @@ var app = new gxp.Viewer({
     map: {
         projection: "EPSG:3857",
         center: [-8237625.42317963, 4974570.25854274],
-        zoom: 14,
+        zoom: 16,
         layers: [{
             source: "osm",
             name: "mapnik",

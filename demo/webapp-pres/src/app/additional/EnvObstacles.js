@@ -12,7 +12,7 @@
 var envObstacles = Ext.extend(gpigf.plugins.Tool, {
     
     ptype: 'app_env_obstacles',
-    task: null,
+    registered: false,
       
     /** Initialization of the plugin */
     init: function(target) {
@@ -51,17 +51,16 @@ var envObstacles = Ext.extend(gpigf.plugins.Tool, {
     },
     
     toggleEnvObstacles: function() {
-        if (this.task == null) {
-            this.task = {
-                run: this.think,
-                interval: this.getGrowthSpeed() * 5,
-                scope: this
-            };
+        if (this.registered == false) {
+            this.registerThinkCallback({ 
+                  func: this.think, 
+                  scope: this
+            });
             
-            Ext.TaskMgr.start(this.task);
+            this.registered = true;
         } else {
-            Ext.TaskMgr.stop(this.task);
-            this.task = null;
+            //Ext.TaskMgr.stop(this.task);
+            //this.task = null;
         }   
     },
     

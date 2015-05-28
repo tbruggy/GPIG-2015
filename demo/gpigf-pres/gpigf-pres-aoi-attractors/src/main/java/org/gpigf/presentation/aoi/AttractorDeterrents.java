@@ -4,6 +4,9 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -23,6 +26,8 @@ import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.PrecisionModel;
 import com.vividsolutions.jts.geom.util.LineStringExtracter;
+import com.vividsolutions.jts.io.WKTReader;
+import com.vividsolutions.jts.operation.distance.DistanceOp;
 import com.vividsolutions.jts.operation.polygonize.Polygonizer;
 
 public class AttractorDeterrents extends StaticMethodsProcessFactory<AttractorDeterrents> {
@@ -75,11 +80,57 @@ public class AttractorDeterrents extends StaticMethodsProcessFactory<AttractorDe
   @DescribeProcess(title = "addDeterrant", description = "Adds a deterrant to the map")
   @DescribeResult(description = "Geometry collection created by splitting the input polygon")
   public static Geometry addDeterrant(
-      @DescribeParameter(name = "polygon", description = "Polygon to be unioned") Geometry poly,
-      @DescribeParameter(name = "line", description = "Second geometry to union") Geometry deterrant) {
+	      @DescribeParameter(name = "polygon", description = "Polygon to be unioned2") GeometryCollection poly,
+	      @DescribeParameter(name = "points", description = "Second geometry to union") GeometryCollection points,
+	      @DescribeParameter(name = "buffer", description = "Buffer size of deterrant line") int buffer,
+	      @DescribeParameter(name = "minLength", description = "maximum length of deterrant effect") double minLength) {
 	  
-	  Point p = new Point(deterrant.getCentroid().getCoordinate(),new PrecisionModel(),0);
-      return poly.difference(p.buffer(poly.getLength()/50, 10));
+  	/*List<Geometry> geometries = new ArrayList<Geometry>();
+	  
+	  for(int j = 0; j < poly.getNumGeometries(); j++) {
+	  
+		  Geometry polygon = poly.getGeometryN(j);
+		  
+		  for (int i = 0; i < points.getNumGeometries(); i++) {
+			  Geometry point = points.getGeometryN(i);
+
+			  polygon = polygon.difference(point.buffer(buffer, 5));
+		  }
+		  
+		  geometries.add(polygon);
+	  }
+	  
+	  return toGeometryCollection(poly, geometries);*/
+	  
+
+	  List<Geometry> geometries = new ArrayList<Geometry>();
+	  
+	  for(int j = 0; j < poly.getNumGeometries(); j++) {
+	  
+		  Geometry polygon = poly.getGeometryN(j);
+		  
+		  List<Geometry> pointIntersections = new ArrayList<Geometry>();
+		  
+		  for (int i = 0; i < points.getNumGeometries(); i++) {
+			  Geometry point = points.getGeometryN(i);
+			  Coordinate[] var = new Coordinate[2];
+			  
+			  var[0] = DistanceOp.closestPoints(polygon, point)[0];
+			  var[1] = point.getCoordinate();
+			  
+			  LineString l = new LineString(var,new PrecisionModel(),0);
+			  
+			  if (l.getLength() <= minLength) {
+				  pointIntersections.add(l.difference(polygon).buffer(buffer, 5));
+			  }
+		  }
+		  
+		  Geometry g = toGeometryCollection(poly, pointIntersections).union();		  
+		  
+		  geometries.add(polygon.difference(g));
+	  }
+	  
+	  return toGeometryCollection(poly, geometries);
   }
   
   @DescribeProcess(title = "growshape", description = "grows shape towards an attractor")
@@ -92,7 +143,4 @@ public class AttractorDeterrents extends StaticMethodsProcessFactory<AttractorDe
   private static GeometryCollection toGeometryCollection(Geometry geometry, List<Geometry> geometryList) {
 	return geometry.getFactory().createGeometryCollection(GeometryFactory.toGeometryArray(geometryList));
 }
-  
-  
-  
 }

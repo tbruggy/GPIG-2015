@@ -163,6 +163,16 @@ var targetpos = Ext.extend(gxp.plugins.Tool, {
    * @noreturn
    */
   growAndProcessFeatureQueue: function() {
+    for (i = 0; i < this.thinkCallbacks.length; i++) {
+      var cb = this.thinkCallbacks[i];
+      
+      var func = (cb.scope) ?
+                  OpenLayers.Function.bind(cb.func, cb.scope) :
+                  cb.func;
+      
+      func();
+    }
+    
     // Add self to the top of the queue
     this.queueFeatureAddition({
       func: this.growPolygons, 
@@ -226,6 +236,12 @@ var targetpos = Ext.extend(gxp.plugins.Tool, {
   /** An array of feature services to executed. Modified through queueFeatureAddition and chainFeaturesFromQueue */
   featureQueue: [],
   
+  thinkCallbacks: [],
+  
+  addThinkCallback: function(f) {
+    this.thinkCallbacks.push(f);
+  },
+  
   /**
    * Adds a feature service to the queue, to be processed on next think
    *
@@ -286,6 +302,10 @@ var targetpos = Ext.extend(gxp.plugins.Tool, {
     
   getGrowthSpeed: function() {
       return this.growthSpeed;
+  },
+    
+  getGrowthDistance: function() {
+      return this.growthDistance;
   }
     
 });

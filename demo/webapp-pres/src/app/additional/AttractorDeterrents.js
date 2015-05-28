@@ -12,7 +12,7 @@ var WPSDemo = Ext.extend(gpigf.plugins.Tool, {
 
     ptype: 'app_attractor_deterrants',
     
-    task: null,
+    registered: false,
     attractors : [],
     detterants : [],
     
@@ -109,7 +109,24 @@ var WPSDemo = Ext.extend(gpigf.plugins.Tool, {
     polygonAdded: function(evt) {
         targetPolygon = evt.feature;
     },
-
+    
+    think: function() {
+        if (this.attractors.length > 0) {
+          this.queueFeatureAddition({
+              func: this.processAttractor,
+              scope: this,
+              data: this.attractors
+          });
+        }
+        
+        if (this.detterants.length > 0) {
+          this.queueFeatureAddition({
+              func: this.processDeterrents,
+              scope: this,
+              data: this.detterants
+          });
+        }
+    },
 
     /** Add attractor point */
     addAttractor: function(evt) {
@@ -117,23 +134,14 @@ var WPSDemo = Ext.extend(gpigf.plugins.Tool, {
         
         this.attractors.push(line);
         
-        if (this.task == null) {
-            this.task = {
-                run: this.think,
-                interval: this.getGrowthSpeed() * 5,
-                scope: this
-            };
+        if (this.registered == false) {
+            this.registerThinkCallback({ 
+                  func: this.think, 
+                  scope: this
+            });
             
-            Ext.TaskMgr.start(this.task);
+            this.registered = true;
         }
-    },
-    
-    think: function() {
-        this.queueFeatureAddition({
-            func: this.processAttractor,
-            scope: this,
-            data: this.attractors
-        });
     },
     
     processAttractor: function(polys, attractors) {
@@ -148,6 +156,35 @@ var WPSDemo = Ext.extend(gpigf.plugins.Tool, {
         }).output();
     },
 
+    /** Handler function for splitting geometries */
+    addDeterrant: function(evt) {
+         var line = evt.feature;
+        
+        this.detterants.push(line);
+        
+        if (this.registered == false) {
+            this.registerThinkCallback({ 
+                  func: this.think, 
+                  scope: this
+            });
+            
+            this.registered = true;
+        }
+    },
+
+    processDeterrents: function(polys, detterants) {
+        return this.wpsClient.getProcess(
+            'local', 'gpigf:addDeterrant'
+        ).configure({
+            inputs: {
+                polygon: polys,
+                points: detterants,
+                buffer: this.getGrowthDistance()/2,
+                minLength: 500,
+            }
+        }).output();
+    },
+    
     /** Grow Atractors */
     grow: function(evt) {
         this.wpsClient.execute({
@@ -158,46 +195,6 @@ var WPSDemo = Ext.extend(gpigf.plugins.Tool, {
                         scope: this
                     });
     },
-
-    /** Handler function for splitting geometries */
-    addDeterrant: function(evt) {
-        var line = evt.feature;
-        var poly = targetPolygon;
-        
-        this.detterants.push(line);
-        
-             this.wpsClient.execute({
-                        server: 'local',
-                        process: 'custom:addDeterrant',
-                        inputs: { polygon: poly, line: line },
-                        success: this.addResult,
-                        scope: this
-                    });
-
-
-    },
-    /** Add the result from a deterrant */
-    addResult: function(outputs) {
-        targetPolygon = outputs.result[0];
-        this.layer.removeAllFeatures();
-        this.layer.addFeatures(outputs.result);
-        this.layer.addFeatures(targetAttractor);
-    },
-
-    targetAttractor: null,
-    /** Add the result from the addition of an attractor */
-    addNewResult: function(outputs) {
-        targetAttractor = outputs.result[0];
-        this.layer.addFeatures(outputs.result);
-    },
-
-    /** Add the result from the growth*/
-    addGrowResult: function(outputs) {
-        this.layer.removeFeatures(targetAttractor);
-        this.layer.addFeatures(outputs.result);
-        targetAttractor = outputs.result[0];
-    },
-
 });
 
 Ext.preg(WPSDemo.prototype.ptype, WPSDemo);
