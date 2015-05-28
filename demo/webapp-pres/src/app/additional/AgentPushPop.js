@@ -13,6 +13,12 @@ var agentNum = 1;
 
 var numPositions = -1;
 
+var selectedStyle = {
+	strokeColor : '#FF0000',
+	strokeWidth: 10,
+	pointRadius: 15
+};
+
 var Demo = Ext.extend(gxp.plugins.Tool, {
 
     ptype: 'app_demo',
@@ -35,7 +41,12 @@ var Demo = Ext.extend(gxp.plugins.Tool, {
                 name: 'sketch',
                 source: 'ol'
             }).getLayer();
-            // Some defaults
+            this.agentLayer = target.getLayerRecordFromMap({
+                name: 'agents',
+                source: 'ol'
+            }).getLayer();
+			this.agentLayer.style = selectedStyle;
+			// Some defaults
             var actionDefaults = {
                 map: target.mapPanel.map,
                 enableToggle: true,
@@ -51,7 +62,7 @@ var Demo = Ext.extend(gxp.plugins.Tool, {
                 new GeoExt.Action(Ext.apply({
                     text: 'Add Agent',
                     control: new OpenLayers.Control.DrawFeature(
-                        this.layer, OpenLayers.Handler.Point,
+                        this.agentLayer, OpenLayers.Handler.Point,
 						{
 							eventListeners: {
 								featureadded: this.addToArray,
@@ -80,7 +91,7 @@ var Demo = Ext.extend(gxp.plugins.Tool, {
                 new GeoExt.Action(Ext.apply({
                     text: 'Drag',
                     control: new OpenLayers.Control.DragFeature(
-                        this.layer
+                        this.agentLayer
                     )
                 }, actionDefaults)),
 				
@@ -135,7 +146,7 @@ var Demo = Ext.extend(gxp.plugins.Tool, {
 	agentsArray : [],
 	
 	// Index used in the adding of agents to the array, before they are pushed
-	agentsArrayIndex : 1,
+	agentsArrayIndex : 0,
 	
 	// Position number used to iterate through positions in the database
 	positionNumber : 1,
@@ -154,8 +165,8 @@ var Demo = Ext.extend(gxp.plugins.Tool, {
 	
 	// Remove the agents (but add the area again)
 	removeAgents: function(evt) {
-		this.layer.removeAllFeatures();
-		this.layer.addFeatures(targetArea);
+		this.agentLayer.removeAllFeatures();
+		//this.layer.addFeatures(targetArea);
 	},
 	
 	// Save previous when a next position is loaded and displayed
@@ -179,10 +190,10 @@ var Demo = Ext.extend(gxp.plugins.Tool, {
         });
 	},
 	
-	// Loads the next position from the database
-	nextPosition: function(evt) {
+	nextPosition:function()
+	{
 		this.removeAgents();
-		this.positionNumber++;
+		this.positionNumber++
 		this.wpsClient.execute({
             server: 'local',
             process: 'gpigf:popPosition',
@@ -209,16 +220,16 @@ var Demo = Ext.extend(gxp.plugins.Tool, {
 	
 	// Push agents added using 'Add Agent' to the database
 	pushAgents: function(evt) {
+		console.log(this.agentsArray);
         this.wpsClient.execute({
             server: 'local',
             process: 'gpigf:pushAgents',
             inputs: {
-                agents: this.agentsArray//agentsCol
+                agents: this.agentsArray
             },
             success: this.pushedResult,
             scope: this
         });
-        //this.layer.removeFeatures([poly]);  // Remove this line for psuedo-heatmap styling!
     },
 	
 	// Test button function - not currently used
@@ -243,17 +254,14 @@ var Demo = Ext.extend(gxp.plugins.Tool, {
     },
 	
 	// Remove a line from the area, using the positions in lastArray and agentsArray
-	dig: function(evt) {
-		var feature = evt.feature;
-		var featureArray = [feature];
-		var a = this.lastArray;
-		var b = this.agentsArray;
-		this.layer.removeFeatures(targetArea);
+	dig: function(area) {
+		area = targetArea;
+		this.layer.removeAllFeatures();
 		this.wpsClient.execute({
             server: 'local',
             process: 'gpigf:agentDigArea',
             inputs: {
-				target_areas: evt.feature,
+				target_areas: area,
                 previous_positions: this.lastArray,
 				new_positions: this.agentsArray,
 				agent_vision: 10000
@@ -265,27 +273,32 @@ var Demo = Ext.extend(gxp.plugins.Tool, {
 	
 	// Called after a result is pushed - currently does nothing
 	pushedResult: function(outputs) {
+		alert("pushed");
 	},
 	
 	// Called after a result is popped, updates lastArray and agentsArray and displays new positions
 	poppedResult: function(outputs) {
 		if (outputs.result == undefined) {
-			console.log("undefined from pop");
+			alert("End");
 			return;
 		}
 		//alert(outputs.result);
 		this.lastArray = this.agentsArray;
 		this.agentsArray = outputs.result;
-		//for (int i; i < output.result.getNumGeometries(); i++) {
-			//this.agentsArray[i] = output.result.getGeomtryN(i);
-		//}
-		this.layer.addFeatures(outputs.result);
+		OpenLayers.Function.bind(this.dig(this.layer), this);
+		this.agentLayer.addFeatures(this.agentsArray);
+		var timer = setTimeout(OpenLayers.Function.bind(this.nextPosition, this),1000);
 	},
 
     /** Helper function for adding process results to the vector layer */
     addResult: function(outputs) {
-        this.layer.addFeatures(outputs.result);
-		targetArea = outputs.result[0];
+		if (outputs.result == null) {
+			this.layer.addFeatures(targetArea);
+		}
+		else {
+			this.layer.addFeatures(outputs.result);
+			targetArea = outputs.result;
+		}
     },
 	
 	// Variable to save the target area
@@ -293,7 +306,7 @@ var Demo = Ext.extend(gxp.plugins.Tool, {
 	
 	// Saves the target area - used to prevent it from being removed
 	saveTargetArea:function(evt){
-		targetArea = evt.feature
+		targetArea = evt.feature;
 	}
 
 });
