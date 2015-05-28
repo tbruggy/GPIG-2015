@@ -12,6 +12,7 @@
  * @require additional/Attractors.js
  * @require additional/DB_PushPop.js
  * @require additional/EnvObstacles.js
+ * @require additional/AttractorDeterrents.js
  */
 
 var app = new gxp.Viewer({
@@ -40,6 +41,11 @@ var app = new gxp.Viewer({
         ptype: "app_env_obstacles",
         id: "env_obstacles",
         target_pos: "possible-target-positions",
+      },
+      { 
+        ptype: "app_attractor_deterrants",
+        id: "attractor_deterrants",
+        target_pos: "possible-target-positions",
       }
     ],
     sources: {
@@ -49,7 +55,7 @@ var app = new gxp.Viewer({
     map: {
         projection: "EPSG:3857",
         center: [-8237625.42317963, 4974570.25854274],
-        zoom: 14,
+        zoom: 16,
         layers: [{
             source: "osm",
             name: "mapnik",

@@ -8,9 +8,13 @@
  * @require OpenLayers/WPSClient.js
  */
 
-var WPSDemo = Ext.extend(gxp.plugins.Tool, {
+var WPSDemo = Ext.extend(gpigf.plugins.Tool, {
 
-    ptype: 'app_wpsdemo',
+    ptype: 'app_attractor_deterrants',
+    
+    registered: false,
+    attractors : [],
+    detterants : [],
     
     /** Initialization of the plugin */
     init: function(target) {
@@ -66,7 +70,7 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
                 new GeoExt.Action(Ext.apply({
                     text: 'Place Attractor',
                     control: new OpenLayers.Control.DrawFeature(
-                        this.layer, OpenLayers.Handler.Path, {
+                        this.layer, OpenLayers.Handler.Point, {
                         eventListeners: {
                             featureadded: this.addAttractor,
                             scope: this
@@ -77,7 +81,7 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
                 new GeoExt.Action(Ext.apply({
                     text: 'Place Deterrant',
                     control: new OpenLayers.Control.DrawFeature(
-                        this.layer, OpenLayers.Handler.Path, {
+                        this.layer, OpenLayers.Handler.Point, {
                         eventListeners: {
                             featureadded: this.addDeterrant,
                             scope: this
@@ -105,22 +109,82 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
     polygonAdded: function(evt) {
         targetPolygon = evt.feature;
     },
-
+    
+    think: function() {
+        if (this.attractors.length > 0) {
+          this.queueFeatureAddition({
+              func: this.processAttractor,
+              scope: this,
+              data: this.attractors
+          });
+        }
+        
+        if (this.detterants.length > 0) {
+          this.queueFeatureAddition({
+              func: this.processDeterrents,
+              scope: this,
+              data: this.detterants
+          });
+        }
+    },
 
     /** Add attractor point */
     addAttractor: function(evt) {
         var line = evt.feature;
-        var poly = targetPolygon;
-        this.layer.removeFeatures(line);
-             this.wpsClient.execute({
-                        server: 'local',
-                        process: 'custom:addAttractor',
-                        inputs: { polygon: poly, line: line },
-                        success: this.addNewResult,
-                        scope: this
-                    });
+        
+        this.attractors.push(line);
+        
+        if (this.registered == false) {
+            this.registerThinkCallback({ 
+                  func: this.think, 
+                  scope: this
+            });
+            
+            this.registered = true;
+        }
+    },
+    
+    processAttractor: function(polys, attractors) {
+        return this.wpsClient.getProcess(
+            'local', 'gpigf:addAttractor'
+        ).configure({
+            inputs: {
+                polygon: polys,
+                points: attractors,
+                buffer: 10
+            }
+        }).output();
     },
 
+    /** Handler function for splitting geometries */
+    addDeterrant: function(evt) {
+        var line = evt.feature;
+        
+        this.detterants.push(line);
+        
+        if (this.registered == false) {
+            this.registerThinkCallback({ 
+                  func: this.think, 
+                  scope: this
+            });
+            
+            this.registered = true;
+        }
+    },
+
+    processDeterrents: function(polys, detterants) {
+        return this.wpsClient.getProcess(
+            'local', 'gpigf:addDeterrant'
+        ).configure({
+            inputs: {
+                polygon: polys,
+                points: detterants,
+                buffer: this.getGrowthDistance()/2,
+                minLength: 500,
+            }
+        }).output();
+    },
+    
     /** Grow Atractors */
     grow: function(evt) {
         this.wpsClient.execute({
@@ -131,43 +195,6 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
                         scope: this
                     });
     },
-
-    /** Handler function for splitting geometries */
-    addDeterrant: function(evt) {
-        var line = evt.feature;
-        var poly = targetPolygon;
-             this.wpsClient.execute({
-                        server: 'local',
-                        process: 'custom:addDeterrant',
-                        inputs: { polygon: poly, line: line },
-                        success: this.addResult,
-                        scope: this
-                    });
-
-
-    },
-    /** Add the result from a deterrant */
-    addResult: function(outputs) {
-        targetPolygon = outputs.result[0];
-        this.layer.removeAllFeatures();
-        this.layer.addFeatures(outputs.result);
-        this.layer.addFeatures(targetAttractor);
-    },
-
-    targetAttractor: null,
-    /** Add the result from the addition of an attractor */
-    addNewResult: function(outputs) {
-        targetAttractor = outputs.result[0];
-        this.layer.addFeatures(outputs.result);
-    },
-
-    /** Add the result from the growth*/
-    addGrowResult: function(outputs) {
-        this.layer.removeFeatures(targetAttractor);
-        this.layer.addFeatures(outputs.result);
-        targetAttractor = outputs.result[0];
-    },
-
 });
 
 Ext.preg(WPSDemo.prototype.ptype, WPSDemo);
