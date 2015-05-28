@@ -158,7 +158,7 @@ var WPSDemo = Ext.extend(gpigf.plugins.Tool, {
 
     /** Handler function for splitting geometries */
     addDeterrant: function(evt) {
-         var line = evt.feature;
+        var line = evt.feature;
         
         this.detterants.push(line);
         
