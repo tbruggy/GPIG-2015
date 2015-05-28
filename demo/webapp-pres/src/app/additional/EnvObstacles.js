@@ -9,12 +9,12 @@
  * @require gpigf/Tool.js
  */
 
-var attractors = Ext.extend(gpigf.plugins.Tool, {
+var envObstacles = Ext.extend(gpigf.plugins.Tool, {
     ptype: 'app_env_obstacles',
-  
+      
     /** Initialization of the plugin */
     init: function(target) {
-        attractors.superclass.init.apply(this, arguments);
+        envObstacles.superclass.init.apply(this, arguments);
 
         // Create a WPSClient instance for use with the local GeoServer
         this.wpsClient = new OpenLayers.WPSClient({
@@ -40,58 +40,42 @@ var attractors = Ext.extend(gpigf.plugins.Tool, {
             this.addActions([
                 new GeoExt.Action(Ext.apply({
                     text: 'Grow with Environmetal Obstacles',
-                    control: new OpenLayers.Control.DrawFeature(
-                        this.layer, OpenLayers.Handler.Polygon, {
-                        eventListeners: {
-                            featureadded: this.processEnvObstacles,
-                            scope: this
-                        }
-                    })
-                }, actionDefaults)),
-                new GeoExt.Action(Ext.apply({
-                    text: 'Save Environmental Obstacle',
-                    control: new OpenLayers.Control.DrawFeature(
-                        this.layer, OpenLayers.Handler.Polygon, {
-                        eventListeners: {
-                            featureadded: this.saveEnvObstacles,
-                            scope: this
-                        }
-                    })
-                }, actionDefaults)),
-                new GeoExt.Action(Ext.apply({
-                    text: 'Grow',
-                    control: new OpenLayers.Control.SelectFeature(this.layer,
-                    {
-                        clickout: true, toggle: false,
-                        multiple: false, hover: false,
-                        eventListeners: {
-                            featurehighlighted: this.processEnvObstacles,
-                            scope: this
-                        }
+                    control: new OpenLayers.Control.Button({
+                        trigger: OpenLayers.Function.bind(this.toggleEnvObstacles, this)
                     })
                 }, actionDefaults))
             ]);
         }, this);
     },
     
-    processEnvObstacles: function(evt) {
-        var polys = evt.feature;
-  
-        this.wpsClient.execute({
-            server: 'local',
-            process: 'gpigf:processEnvObstacles',
+    toggleEnvObstacles: function() {
+        Ext.TaskMgr.start({
+            run: this.think,
+            interval: this.getGrowthSpeed() * 5,
+            scope: this
+        });    
+    },
+    
+    think: function() {
+        this.queueFeatureAddition({
+            func: this.processEnvObstacles,
+            scope: this,
+            data: null
+        });
+    },
+    
+    processEnvObstacles: function(polys, data) {
+        return this.wpsClient.getProcess(
+            'local', 'gpigf:processEnvObstacles'
+        ).configure({
             inputs: {
                 target_areas: polys,
                 road_growth: 20,
                 area_growth: 5,
                 ext_target_area: 50,
                 env_obstacle_growth: 1
-            },
-            success: this.addResult,
-            scope: this
-        });
-      
-        this.layer.removeFeatures(polys);
+            }
+        }).output();
     },
     
     saveEnvObstacles: function(evt) {
@@ -108,12 +92,8 @@ var attractors = Ext.extend(gpigf.plugins.Tool, {
         });
       
         this.layer.removeFeatures(polys);
-    },
-
-    addResult: function(outputs) {
-        this.layer.addFeatures(outputs.result);         
     }
           
 });
 
-Ext.preg(attractors.prototype.ptype, attractors);
+Ext.preg(envObstacles.prototype.ptype, envObstacles);

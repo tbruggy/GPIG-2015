@@ -78,7 +78,7 @@ var targetpos = Ext.extend(gxp.plugins.Tool, {
    */
   queuedTargetPositions: [],
   /** Distance to grow the polygon by each interval */
-  growthDistance: 0,
+  growthDistance: 1,
   /** Time (ms) between each growth interval */
   growthSpeed: 200,
   /** Number of quadrants to use when rounding corners, low number means no smoothing */
@@ -282,7 +282,12 @@ var targetpos = Ext.extend(gxp.plugins.Tool, {
       // Queue is empty, set to false to allow the next think to execute
       this.processingServiceRequest = false;
     }
+  },
+    
+  getGrowthSpeed: function() {
+      return this.growthSpeed;
   }
+    
 });
 
 Ext.preg(targetpos.prototype.ptype, targetpos);

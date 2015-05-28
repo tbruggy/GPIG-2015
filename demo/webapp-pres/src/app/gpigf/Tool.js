@@ -52,4 +52,8 @@ gpigf.plugins.Tool = Ext.extend(gxp.plugins.Tool, {
   queueFeatureAddition: function(f) {
     this.getTargetPositionsFeature().queueFeatureAddition(f);
   },
+    
+  getGrowthSpeed: function() {
+    return this.getTargetPositionsFeature().getGrowthSpeed();
+  }
 });
