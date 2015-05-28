@@ -12,6 +12,7 @@ var WPSDemo = Ext.extend(gpigf.plugins.Tool, {
 
     ptype: 'app_attractor_deterrants',
     
+    task: null,
     attractors : [],
     detterants : [],
     
@@ -113,18 +114,39 @@ var WPSDemo = Ext.extend(gpigf.plugins.Tool, {
     /** Add attractor point */
     addAttractor: function(evt) {
         var line = evt.feature;
-        var poly = targetPolygon;
-        //this.layer.removeFeatures(line);
         
         this.attractors.push(line);
         
-        this.wpsClient.execute({
-            server: 'local',
-            process: 'custom:addAttractor',
-            inputs: { polygon: poly, line: line },
-            success: this.addNewResult,
-            scope: this
-        });
+        if (this.task == null) {
+            this.task = {
+                run: this.think,
+                interval: this.getGrowthSpeed() * 5,
+                scope: this
+            };
+            
+            Ext.TaskMgr.start(this.task);
+        }
+    },
+    
+    think: function() {
+        for(i = 0; i < this.attractors.length; i++) {
+            this.queueFeatureAddition({
+                func: this.processAttractor,
+                scope: this,
+                data: this.attractors[i]
+            });
+        }
+    },
+    
+    processAttractor: function(polys, attractor) {
+        return this.wpsClient.getProcess(
+            'local', 'gpigf:addAttractor'
+        ).configure({
+            inputs: {
+                polygon: polys,
+                line: attractor 
+            }
+        }).output();
     },
 
     /** Grow Atractors */

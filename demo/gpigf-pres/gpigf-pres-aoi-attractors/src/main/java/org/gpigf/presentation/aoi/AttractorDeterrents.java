@@ -1,5 +1,6 @@
 package org.gpigf.presentation.aoi;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -11,6 +12,7 @@ import org.geotools.text.Text;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
@@ -22,7 +24,7 @@ import com.vividsolutions.jts.operation.polygonize.Polygonizer;
 public class AttractorDeterrents extends StaticMethodsProcessFactory<AttractorDeterrents> {
 
   public AttractorDeterrents() {
-    super(Text.text("Polygon Tools"), "custom", AttractorDeterrents.class);
+    super(Text.text("Polygon Tools"), "gpigf", AttractorDeterrents.class);
   }
 
   static Geometry polygonize(Geometry geometry) {
@@ -36,19 +38,23 @@ public class AttractorDeterrents extends StaticMethodsProcessFactory<AttractorDe
 
   @DescribeProcess(title = "addAttractor", description = "Adds an attractor to the map")
   @DescribeResult(description = "Geometry collection created by creating a linestring to the attractor")
-  public static Geometry addAttractor(
-      @DescribeParameter(name = "polygon", description = "Polygon to be unioned2") Geometry poly,
+  public static GeometryCollection addAttractor(
+      @DescribeParameter(name = "polygon", description = "Polygon to be unioned2") GeometryCollection poly,
       @DescribeParameter(name = "line", description = "Second geometry to union") Geometry point) {
       
-	  Coordinate[] var = new Coordinate[2];
-	  var[0] = poly.getCentroid().getCoordinate();
-	  var[1] = point.getCentroid().getCoordinate();
+	  List<Geometry> geometries = new ArrayList<Geometry>();
 	  
-	  LineString l = new LineString(var,new PrecisionModel(),0);  
+	  for(int i = 0; i < poly.getNumGeometries(); i++) {
+		  Geometry polygon = poly.getGeometryN(i);
+		  Coordinate[] var = new Coordinate[2];
+		  var[0] = polygon.getCentroid().getCoordinate();
+		  var[1] = point.getCentroid().getCoordinate();
+		  
+		  LineString l = new LineString(var,new PrecisionModel(),0);  
+		  geometries.add(l.intersection(polygon).buffer(polygon.getLength()/50,10).union(polygon));  
+	  }
 	  
-	  return l.intersection(poly).buffer(poly.getLength()/50,10).difference(poly);
-	  
-//      return l.intersection(poly).buffer(poly.getLength()/50,10).union(poly);
+	  return toGeometryCollection(poly, geometries);
   }
   
   @DescribeProcess(title = "addDeterrant", description = "Adds a deterrant to the map")
@@ -67,5 +73,9 @@ public class AttractorDeterrents extends StaticMethodsProcessFactory<AttractorDe
 		  @DescribeParameter(name = "shape", description = "shape to be grown") Geometry shape){
 	  return shape.buffer(shape.getLength()/6, 5);
   }
+  
+  private static GeometryCollection toGeometryCollection(Geometry geometry, List<Geometry> geometryList) {
+	return geometry.getFactory().createGeometryCollection(GeometryFactory.toGeometryArray(geometryList));
+}
   
 }
