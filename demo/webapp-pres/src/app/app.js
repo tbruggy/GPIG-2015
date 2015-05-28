@@ -12,6 +12,7 @@
  * @require additional/Attractors.js
  * @require additional/DB_PushPop.js
  * @require additional/EnvObstacles.js
+ * @require additional/AttractorDeterrents.js
  */
 
 var app = new gxp.Viewer({
@@ -39,6 +40,11 @@ var app = new gxp.Viewer({
       { 
         ptype: "app_env_obstacles",
         id: "env_obstacles",
+        target_pos: "possible-target-positions",
+      },
+      { 
+        ptype: "app_attractor_deterrants",
+        id: "attractor_deterrants",
         target_pos: "possible-target-positions",
       }
     ],

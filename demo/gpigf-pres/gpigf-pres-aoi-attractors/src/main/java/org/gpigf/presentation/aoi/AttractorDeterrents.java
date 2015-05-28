@@ -1,4 +1,4 @@
-package org.example.wps.wps_demo;
+package org.gpigf.presentation.aoi;
 
 import java.util.Collection;
 import java.util.List;

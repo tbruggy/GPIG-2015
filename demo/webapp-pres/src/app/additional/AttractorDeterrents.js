@@ -8,9 +8,12 @@
  * @require OpenLayers/WPSClient.js
  */
 
-var WPSDemo = Ext.extend(gxp.plugins.Tool, {
+var WPSDemo = Ext.extend(gpigf.plugins.Tool, {
 
-    ptype: 'app_wpsdemo',
+    ptype: 'app_attractor_deterrants',
+    
+    attractors : [],
+    detterants : [],
     
     /** Initialization of the plugin */
     init: function(target) {
@@ -66,7 +69,7 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
                 new GeoExt.Action(Ext.apply({
                     text: 'Place Attractor',
                     control: new OpenLayers.Control.DrawFeature(
-                        this.layer, OpenLayers.Handler.Path, {
+                        this.layer, OpenLayers.Handler.Point, {
                         eventListeners: {
                             featureadded: this.addAttractor,
                             scope: this
@@ -77,7 +80,7 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
                 new GeoExt.Action(Ext.apply({
                     text: 'Place Deterrant',
                     control: new OpenLayers.Control.DrawFeature(
-                        this.layer, OpenLayers.Handler.Path, {
+                        this.layer, OpenLayers.Handler.Point, {
                         eventListeners: {
                             featureadded: this.addDeterrant,
                             scope: this
@@ -111,14 +114,17 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
     addAttractor: function(evt) {
         var line = evt.feature;
         var poly = targetPolygon;
-        this.layer.removeFeatures(line);
-             this.wpsClient.execute({
-                        server: 'local',
-                        process: 'custom:addAttractor',
-                        inputs: { polygon: poly, line: line },
-                        success: this.addNewResult,
-                        scope: this
-                    });
+        //this.layer.removeFeatures(line);
+        
+        this.attractors.push(line);
+        
+        this.wpsClient.execute({
+            server: 'local',
+            process: 'custom:addAttractor',
+            inputs: { polygon: poly, line: line },
+            success: this.addNewResult,
+            scope: this
+        });
     },
 
     /** Grow Atractors */
@@ -136,6 +142,9 @@ var WPSDemo = Ext.extend(gxp.plugins.Tool, {
     addDeterrant: function(evt) {
         var line = evt.feature;
         var poly = targetPolygon;
+        
+        this.detterants.push(line);
+        
              this.wpsClient.execute({
                         server: 'local',
                         process: 'custom:addDeterrant',
