@@ -3,6 +3,8 @@
  * @require GeoExt/widgets/Action.js
  * @require OpenLayers/Control/DrawFeature.js
  * @require OpenLayers/Control/DragFeature.js
+ * @require OpenLayers/Control/SelectFeature.js
+ * @require OpenLayers/Popup/FramedCloud.js
  * @require OpenLayers/Handler/Polygon.js
  * @require OpenLayers/Handler/Path.js
  * @require OpenLayers/WPSClient.js
@@ -65,6 +67,15 @@ var agenttracker = Ext.extend(gpigf.plugins.Tool, {
           control: new OpenLayers.Control.Button({
             trigger: OpenLayers.Function.bind(this.startAgents, this)
           })
+        }, actionDefaults)),
+        new GeoExt.Action(Ext.apply({
+          text: 'Get Agent Info',
+          control: new OpenLayers.Control.SelectFeature(
+            this.agentLayer, {
+              hover: true,
+              onSelect: OpenLayers.Function.bind(this.selectAgent, this), 
+              onUnselect: OpenLayers.Function.bind(this.unselectAgent, this)
+          })
         }, actionDefaults))
       ]);
     }, this);
@@ -90,6 +101,25 @@ var agenttracker = Ext.extend(gpigf.plugins.Tool, {
     }
     
     this.registered = true;
+  },
+  
+  selectedFeature: null,
+  
+  selectAgent: function(feature) {
+    selectedFeature = feature;
+    popup = new OpenLayers.Popup.FramedCloud("chicken", 
+                             feature.geometry.getBounds().getCenterLonLat(),
+                             null,
+                             "<div style='font-size:.8em'>Feature: " + feature.id +"<br />Area: " + feature.geometry.getArea()+"</div>",
+                             null, true, null);
+    feature.popup = popup;
+    this.layer.map.addPopup(popup);
+  },
+  
+  unselectAgent: function(feature) {
+    this.layer.map.removePopup(feature.popup);
+    feature.popup.destroy();
+    feature.popup = null;
   },
   
   /* this should only be called once */
