@@ -103,14 +103,20 @@ var agenttracker = Ext.extend(gpigf.plugins.Tool, {
     this.registered = true;
   },
   
-  selectedFeature: null,
+  agentInfo: [],
+  
+  getAgentInfo: function(id, key) {
+    return this.agentInfo[id][key];
+  },
   
   selectAgent: function(feature) {
-    selectedFeature = feature;
     popup = new OpenLayers.Popup.FramedCloud("chicken", 
                              feature.geometry.getBounds().getCenterLonLat(),
                              null,
-                             "<div style='font-size:.8em'>Feature: " + feature.id +"<br />Area: " + feature.geometry.getArea()+"</div>",
+                             "<div style='font-size:.8em'><b>Name</b>: " + this.getAgentInfo(feature.id, "name") +
+                                                   "<br /><b>Vehicle</b>: " + this.getAgentInfo(feature.id, "v") +
+                                                   "<br /><b>Visibilty Range</b>:" + this.getAgentInfo(feature.id, "vis_range") + 
+                                                   "<br /><b>Status</b>: " + this.getAgentInfo(feature.id, "status") + "</div>",
                              null, true, null);
     feature.popup = popup;
     this.layer.map.addPopup(popup);
@@ -129,6 +135,11 @@ var agenttracker = Ext.extend(gpigf.plugins.Tool, {
     }
     
     this.agentsArray = outputs.result;
+    
+    this.agentInfo[this.agentsArray[0].id] = { name: "Bob Marley", v: "Tank", vis_range: "100", status: "Jammin" }
+    this.agentInfo[this.agentsArray[1].id] = { name: "Mr T", v: "Smartcar", vis_range: "100", status: "Pityin fools" }
+    this.agentInfo[this.agentsArray[2].id] = { name: "Iron Man", v: "Suit", vis_range: "100", status: "Philanthropistic" }
+    this.agentInfo[this.agentsArray[3].id] = { name: "Team F", v: "Limo", vis_range: "100", status: "Getting firsts in our degrees" }
     
     this.agentLayer.removeAllFeatures();
     this.agentLayer.addFeatures(this.agentsArray);
