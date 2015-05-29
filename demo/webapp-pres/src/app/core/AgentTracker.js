@@ -58,18 +58,19 @@ var agenttracker = Ext.extend(gpigf.plugins.Tool, {
       var actionDefaults = {
         map: target.mapPanel.map,
         enableToggle: true,
-        toggleGroup: this.ptype,
         allowDepress: true
       };
       this.addActions([
         new GeoExt.Action(Ext.apply({
           text: 'Start Agents',
+          toggleGroup: this.ptype,
           control: new OpenLayers.Control.Button({
             trigger: OpenLayers.Function.bind(this.startAgents, this)
           })
         }, actionDefaults)),
         new GeoExt.Action(Ext.apply({
           text: 'Get Agent Info',
+          toggleGroup: 'app_core_agenttracker-getinfo',
           control: new OpenLayers.Control.SelectFeature(
             this.agentLayer, {
               hover: true,

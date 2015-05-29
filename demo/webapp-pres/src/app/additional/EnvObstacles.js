@@ -22,6 +22,7 @@ var envObstacles = Ext.extend(gpigf.plugins.Tool, {
     registered: false,
     drawAlongRoads: false,
     environmentalObstacles: [],
+    drawControl: null,
       
     /** Initialization of the plugin */
     init: function(target) {
@@ -48,27 +49,32 @@ var envObstacles = Ext.extend(gpigf.plugins.Tool, {
             
             var actionDefaults = {
                 map: target.mapPanel.map,
-                enableToggle: true,
-                toggleGroup: this.ptype,
-                allowDepress: true
             };
+            
+            this.drawControl = new OpenLayers.Control.DrawFeature(
+                this.envObstaclesLayer, OpenLayers.Handler.Polygon, {
+                eventListeners: {
+                    featureadded: this.addEnvironmentalObstacles,
+                    scope: this
+                }
+            });
             
             this.addActions([
                 new GeoExt.Action(Ext.apply({
                     text: 'Grow along Roads',
+                    enableToggle: true,
+                    toggleGroup: this.ptype,
+                    allowDepress: true,
                     control: new OpenLayers.Control.Button({
                         trigger: OpenLayers.Function.bind(this.toggleRoads, this)
                     })
                 }, actionDefaults)),
                 new GeoExt.Action(Ext.apply({
                     text: 'Draw Environmetal Obstacle',
-                    control: new OpenLayers.Control.DrawFeature(
-                        this.envObstaclesLayer, OpenLayers.Handler.Polygon, {
-                        eventListeners: {
-                            featureadded: this.addEnvironmentalObstacles,
-                            scope: this
-                        }
-                    })
+                    enableToggle: true,
+                    toggleGroup: this.ptype,
+                    allowDepress: true,
+                    control: this.drawControl,
                 }, actionDefaults))
             ]);
             
@@ -91,6 +97,8 @@ var envObstacles = Ext.extend(gpigf.plugins.Tool, {
     addEnvironmentalObstacles: function(evt) {
         var polygon = evt.feature;
         this.environmentalObstacles.push(polygon);
+        
+        this.drawControl.deactivate();
     },
     
     think: function() {

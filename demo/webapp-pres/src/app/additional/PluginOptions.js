@@ -29,25 +29,18 @@ var pluginOptions = Ext.extend(gpigf.plugins.Tool, {
                 source: 'ol'
             }).getLayer();
             
-            var actionDefaults = {
-                map: target.mapPanel.map,
-                enableToggle: true,
-                toggleGroup: this.ptype,
-                allowDepress: true
-            };
-            
-            var optionsButton = new OpenLayers.Control.Button({
-                trigger: OpenLayers.Function.bind(function() {
-                    top.document.getElementById('optionsForm').className = "";
-                    optionsButton.activate();
-                }, this)
-            });
-            
             this.addActions([
                 new GeoExt.Action(Ext.apply({
+                    map: target.mapPanel.map,
+                    enableToggle: false,
+                    allowDepress: false,
                     text: 'Plugin Options',
-                    control: optionsButton
-                }, actionDefaults))
+                    control: new OpenLayers.Control.Button({
+                        trigger: OpenLayers.Function.bind(function() {
+                            top.document.getElementById('optionsForm').className = "";
+                        }, this)
+                    })
+                }, {}))
             ]);
             
         }, this);

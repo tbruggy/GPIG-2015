@@ -1,0 +1,73 @@
+.gpigf .x-panel {
+	height: 100% !important;
+}
+.gpigf .x-panel .x-panel-bwrap {
+	height: 100% !important;
+}
+.gpigf .x-panel .x-panel-bwrap  .x-panel-body {
+	height: 100% !important;
+}
+
+.gpigf .x-panel-tbar, .gpigf .x-panel-bbar {
+	float: left;
+	z-index: 999;
+	position: absolute;
+}
+
+.gpigf .x-panel-bbar {
+	bottom: 0;
+}
+
+.gpigf .x-toolbar {
+	border-style: none !important;
+	padding: 0px 0px 0px 0px !important;
+	background-color: #444 !important;
+	background-image: none !important;
+	opacity: 0.9 !important;
+}
+
+.gpigf .x-toolbar-ct {
+	height: 28px !important;
+}
+.gpigf .x-toolbar-ct .x-btn-text {
+	height: 28px !important;
+}
+.gpigf .x-toolbar-ct td {
+	padding-right: 4px !important;
+}
+
+.gpigf .x-toolbar * {
+	border-style: inherit !important;
+	background-color: inherit !important;
+}
+
+.gpigf .x-btn * {
+	color: #f0f0f0 !important;
+    font-size: 14px !important;
+}
+
+.gpigf .x-btn-over * {
+	background-color: #666 !important;
+	background-image: none !important;
+}
+
+.gpigf .x-btn-pressed * {
+	background-color: #888 !important;
+	background-image: none !important;
+}
+
+.gpigf .x-item-disabled * {
+	color: #888 !important;
+}
+
+.gpigf .olPopup {
+    font-size: 12px !important;
+    visibility: visible !important;
+}
+.gpigf .olMapViewport {
+    visibility: hidden !important;
+}
+
+.gpigf * {
+    font-family: 'Open Sans', sans-serif !important;
+}

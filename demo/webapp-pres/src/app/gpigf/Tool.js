@@ -13,7 +13,7 @@ Ext.namespace("gpigf.plugins");
 
 gpigf.plugins.Tool = Ext.extend(gxp.plugins.Tool, {
   
-  target_pos: null,
+  target_pos: "possible-target-positions",
   
   /**
    * This function finds a plugin by its id. The id is defined in app.js when

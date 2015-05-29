@@ -29,6 +29,8 @@ var targetpos = Ext.extend(gxp.plugins.Tool, {
 
   ptype: 'app_core_target_pos',
   
+  drawControl: null,
+  
   /** Initialization of the plugin */
   init: function(target) {
     targetpos.superclass.init.apply(this, arguments);
@@ -57,33 +59,40 @@ var targetpos = Ext.extend(gxp.plugins.Tool, {
         trigger: OpenLayers.Function.bind(this.stopThinking, this)
       });
       
+      this.drawControl = new OpenLayers.Control.DrawFeature(
+        this.layer, OpenLayers.Handler.Polygon, {
+        eventListeners: {
+          featureadded: this.polygonAdded,
+          scope: this
+        }
+      });
+      
       this.stopBtn.deactivate();
       
       // Some defaults
       var actionDefaults = {
         map: target.mapPanel.map,
         enableToggle: true,
-        toggleGroup: this.ptype,
-        allowDepress: true
       };
       this.addActions([
         // Action for drawing the possible target position area
         new GeoExt.Action(Ext.apply({
           text: 'Draw Possible Target Area',
-          control: new OpenLayers.Control.DrawFeature(
-            this.layer, OpenLayers.Handler.Polygon, {
-            eventListeners: {
-              featureadded: this.polygonAdded,
-              scope: this
-            }
-          })
+          control: this.drawControl,
+          allowDepress: true
         }, actionDefaults)),
         new GeoExt.Action(Ext.apply({
           text: 'Start',
+          enableToggle: true,
+          toggleGroup: this.ptype,
+          allowDepress: false,
           control: this.startBtn
         }, actionDefaults)),
         new GeoExt.Action(Ext.apply({
           text: 'Stop',
+          enableToggle: true,
+          toggleGroup: this.ptype,
+          allowDepress: false,
           control: this.stopBtn
         }, actionDefaults))
       ]);
@@ -168,6 +177,8 @@ var targetpos = Ext.extend(gxp.plugins.Tool, {
     } else {
       this.queuedTargetPositions.push(evt.feature);
     }
+    
+    this.drawControl.deactivate();
   },
   
   /**
