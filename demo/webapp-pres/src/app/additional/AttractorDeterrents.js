@@ -11,12 +11,14 @@
 var deterrantsLayerStyle = OpenLayers.Util.applyDefaults(deterrantsLayerStyle, OpenLayers.Feature.Vector.style['default']);
 deterrantsLayerStyle.fillColor = "#ff6166";
 deterrantsLayerStyle.strokeColor = '#ff2e35';
-deterrantsLayerStyle.strokeWidth = 1;
+deterrantsLayerStyle.strokeWidth = 3;
+deterrantsLayerStyle.pointRadius = 20;
 
 var attractorsLayerStyle = OpenLayers.Util.applyDefaults(attractorsLayerStyle, OpenLayers.Feature.Vector.style['default']);
 attractorsLayerStyle.fillColor = "#77dd88";
-attractorsLayerStyle.strokeColor = '#4ed364';
-attractorsLayerStyle.strokeWidth = 1;
+attractorsLayerStyle.strokeColor = '#3ec354';
+attractorsLayerStyle.strokeWidth = 3;
+attractorsLayerStyle.pointRadius = 20;
 
 var attractorsDeterrants = Ext.extend(gpigf.plugins.Tool, {
 
