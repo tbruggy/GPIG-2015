@@ -5,6 +5,7 @@
  * @require GeoExt/widgets/ZoomSlider.js
  * @require widgets/Viewer.js
  * @require plugins/OLSource.js
+ * @require plugins/GoogleSource.js
  * @require plugins/OSMSource.js
  *
  * @require core/AgentTracker.js
@@ -49,6 +50,7 @@ var app = new gxp.Viewer({
     ],
     sources: {
         osm: { ptype: "gxp_osmsource" },
+        google: { ptype: "gxp_googlesource" },
         ol: { ptype: "gxp_olsource" }
     },
     map: {
@@ -56,8 +58,9 @@ var app = new gxp.Viewer({
         center: [-8236325, 4974370],
         zoom: 17,
         layers: [{
-            source: "osm",
-            name: "mapnik",
+            source: "google",
+            //name: "mapnik",
+            name: "ROADMAP",
             group: "background"
         }, {
             // A vector layer to display our geometries and processing results
