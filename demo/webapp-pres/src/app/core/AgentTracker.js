@@ -95,10 +95,10 @@ var agenttracker = Ext.extend(gpigf.plugins.Tool, {
   /* this should only be called once */
   initFirstAgents: function(outputs) {
     if (outputs.result == undefined) {
-			throw "Unexpected outputs result";
-		}
+      throw "Unexpected outputs result";
+    }
     
-		this.agentsArray = outputs.result;
+    this.agentsArray = outputs.result;
     
     this.agentLayer.removeAllFeatures();
     this.agentLayer.addFeatures(this.agentsArray);
@@ -116,10 +116,12 @@ var agenttracker = Ext.extend(gpigf.plugins.Tool, {
   },
   
   think: function() {
-    this.queueFeatureAddition({
-      func: this.dig,
-      scope: this
-    });
+    if (this.agentsArray.length > 0) {
+      this.queueFeatureAddition({
+        func: this.dig,
+        scope: this
+      });
+    }
   },
   
   updateAgents: function() {

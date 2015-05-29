@@ -47,6 +47,18 @@ var targetpos = Ext.extend(gxp.plugins.Tool, {
         name: 'sketch',
         source: 'ol'
       }).getLayer();
+      
+      
+      this.startBtn = new OpenLayers.Control.Button({
+        trigger: OpenLayers.Function.bind(this.startThinking, this)
+      });
+      
+      this.stopBtn = new OpenLayers.Control.Button({
+        trigger: OpenLayers.Function.bind(this.stopThinking, this)
+      });
+      
+      this.stopBtn.deactivate();
+      
       // Some defaults
       var actionDefaults = {
         map: target.mapPanel.map,
@@ -65,10 +77,30 @@ var targetpos = Ext.extend(gxp.plugins.Tool, {
               scope: this
             }
           })
+        }, actionDefaults)),
+        new GeoExt.Action(Ext.apply({
+          text: 'Start',
+          control: this.startBtn
+        }, actionDefaults)),
+        new GeoExt.Action(Ext.apply({
+          text: 'Stop',
+          control: this.stopBtn
         }, actionDefaults))
       ]);
     }, this);
   },
+  
+  startThinking: function() {
+    this.simulate = true;
+    this.stopBtn.activate();
+  },
+  
+  stopThinking: function() {
+    this.simulate = false;
+    this.startBtn.activate();
+  },
+  
+  simulate: false,
   
   /** Polygons of the target area */
   targetPositions: [],
@@ -139,6 +171,8 @@ var targetpos = Ext.extend(gxp.plugins.Tool, {
    * @noreturn
    */
   think: function() {
+    if (!this.simulate)
+      return;
     /**
      * Sometimes service requests can take a while to process
      * So we do not want to 'think' again before the previous request has finished
