@@ -159,6 +159,10 @@ var agenttracker = Ext.extend(gpigf.plugins.Tool, {
       return;
     }
     
+    if (this.digPending) {
+      return;
+    }
+    
     this.getAgentsPending = true;
     
     this.wpsClient.execute({

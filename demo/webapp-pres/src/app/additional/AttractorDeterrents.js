@@ -123,8 +123,8 @@ var attractorsDeterrants = Ext.extend(gpigf.plugins.Tool, {
               
           });
         }
-        
-        if (this.detterants.length > 0) {
+         
+        if (this.deterrants.length > 0) {
           this.queueFeatureAddition({
               func: this.processDeterrents,
               data: this.deterrants,
