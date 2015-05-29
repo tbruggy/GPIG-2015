@@ -60,16 +60,6 @@ var agentpushpop = Ext.extend(gpigf.plugins.Tool, {
       };
       this.addActions([
         new GeoExt.Action(Ext.apply({
-          text: 'Draw Area',
-          control: new OpenLayers.Control.DrawFeature(
-              this.layer, OpenLayers.Handler.Polygon, {
-                eventListeners: {
-                  featureadded: this.saveTargetArea,
-                  scope: this
-                }
-            })
-        }, actionDefaults)),
-        new GeoExt.Action(Ext.apply({
           text: 'Add Agent',
           control: new OpenLayers.Control.DrawFeature(
             this.agentLayer, OpenLayers.Handler.Point, {
@@ -80,14 +70,14 @@ var agentpushpop = Ext.extend(gpigf.plugins.Tool, {
             })
         }, actionDefaults)),
         new GeoExt.Action(Ext.apply({
-          text: 'Drag',
+          text: 'Drag Agent',
           control: new OpenLayers.Control.DragFeature(
             this.agentLayer, { 
               onComplete: OpenLayers.Function.bind(function(a, b) { this.pushAgentsBtn.activate() }, this)
           })
         }, actionDefaults)),
         new GeoExt.Action(Ext.apply({
-          text: 'Push Agents',
+          text: 'Push Agents Positions to DB',
           control: this.pushAgentsBtn
         }, actionDefaults))
       ]);

@@ -110,7 +110,7 @@ var targetpos = Ext.extend(gxp.plugins.Tool, {
    */
   queuedTargetPositions: [],
   /** Distance to grow the polygon by each interval */
-  growthDistance: 10,
+  growthDistance: 5,
   /** Time (ms) between each growth interval */
   growthSpeed: 200,
   /** Number of quadrants to use when rounding corners, low number means no smoothing */

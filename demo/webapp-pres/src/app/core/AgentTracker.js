@@ -113,10 +113,11 @@ var agenttracker = Ext.extend(gpigf.plugins.Tool, {
     popup = new OpenLayers.Popup.FramedCloud("chicken", 
                              feature.geometry.getBounds().getCenterLonLat(),
                              null,
-                             "<div style='font-size:.8em'><b>Name</b>: " + this.getAgentInfo(feature.id, "name") +
-                                                   "<br /><b>Vehicle</b>: " + this.getAgentInfo(feature.id, "v") +
-                                                   "<br /><b>Visibilty Range</b>:" + this.getAgentInfo(feature.id, "vis_range") + 
-                                                   "<br /><b>Status</b>: " + this.getAgentInfo(feature.id, "status") + "</div>",
+                             "<div style='font-size:1em; padding:12px; padding-bottom:0px'>" +
+                                "<b>Name</b>: " + this.getAgentInfo(feature.id, "name") + "<br />" +
+                                "<b>Vehicle</b>: " + this.getAgentInfo(feature.id, "v") + "<br />" +
+                                "<b>Visibilty Range</b>:" + this.getAgentInfo(feature.id, "vis_range") + "<br />" +
+                                "<b>Status</b>: " + this.getAgentInfo(feature.id, "status") + "</div>",
                              null, true, null);
     feature.popup = popup;
     this.layer.map.addPopup(popup);
@@ -136,6 +137,7 @@ var agenttracker = Ext.extend(gpigf.plugins.Tool, {
     
     this.agentsArray = outputs.result;
     
+    // Warning this is duped below!
     this.agentInfo[this.agentsArray[0].id] = { name: "Bob Marley", v: "Tank", vis_range: "100", status: "Jammin" }
     this.agentInfo[this.agentsArray[1].id] = { name: "Mr T", v: "Smartcar", vis_range: "100", status: "Pityin fools" }
     this.agentInfo[this.agentsArray[2].id] = { name: "Iron Man", v: "Suit", vis_range: "100", status: "Philanthropistic" }
@@ -200,6 +202,8 @@ var agenttracker = Ext.extend(gpigf.plugins.Tool, {
   digPending: false,
   getAgentsPending: false,
   
+  agentVision: 50,
+  
   dig: function(polys, data) {
     if (!this.digPending) {
       // Dirty hack to keep the area around an agent clear
@@ -211,7 +215,7 @@ var agenttracker = Ext.extend(gpigf.plugins.Tool, {
           target_areas: polys,
           previous_positions: this.agentsArray,
           new_positions: this.agentsArray,
-          agent_vision: 100
+          agent_vision: this.agentVision
         }
       }).output();
     }
@@ -228,7 +232,7 @@ var agenttracker = Ext.extend(gpigf.plugins.Tool, {
         target_areas: polys,
         previous_positions: this.lastArray,
         new_positions: this.agentsArray,
-        agent_vision: 100
+        agent_vision: this.agentVision
       }
     }).output();
   },
@@ -241,6 +245,12 @@ var agenttracker = Ext.extend(gpigf.plugins.Tool, {
     
     this.lastArray = this.agentsArray;
     this.agentsArray = outputs.result;
+    
+    // Warning this is duped above!
+    this.agentInfo[this.agentsArray[0].id] = { name: "Bob Marley", v: "Tank", vis_range: "100", status: "Jammin" }
+    this.agentInfo[this.agentsArray[1].id] = { name: "Mr T", v: "Smartcar", vis_range: "100", status: "Pityin fools" }
+    this.agentInfo[this.agentsArray[2].id] = { name: "Iron Man", v: "Suit", vis_range: "100", status: "Philanthropistic" }
+    this.agentInfo[this.agentsArray[3].id] = { name: "Team F", v: "Limo", vis_range: "100", status: "Getting firsts in our degrees" }
     
     this.getAgentsPending = false;
     this.digPending = true;
