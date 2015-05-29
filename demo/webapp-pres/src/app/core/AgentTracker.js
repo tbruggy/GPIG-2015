@@ -78,7 +78,14 @@ var agenttracker = Ext.extend(gpigf.plugins.Tool, {
           })
         }, actionDefaults))
       ]);
+        
+      document.getElementById("optionsSaveBtn").addEventListener("click", OpenLayers.Function.bind(this.updateAgentVision, this));    
+        
     }, this);
+  },
+    
+  updateAgentVision: function() {
+      this.agentVision = document.getElementById("optionsAgentRange").value;
   },
   
   startAgents: function() { 

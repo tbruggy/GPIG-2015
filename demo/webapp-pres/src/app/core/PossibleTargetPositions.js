@@ -24,7 +24,7 @@
  * the growth of the target polygons, then each other feature in the order they were
  * added to the queue in.
  */
- 
+
 var targetpos = Ext.extend(gxp.plugins.Tool, {
 
   ptype: 'app_core_target_pos',
@@ -87,7 +87,14 @@ var targetpos = Ext.extend(gxp.plugins.Tool, {
           control: this.stopBtn
         }, actionDefaults))
       ]);
+        
+      document.getElementById("optionsSaveBtn").addEventListener("click", OpenLayers.Function.bind(this.updateGrowthDistance, this));
+        
     }, this);
+  },
+    
+  updateGrowthDistance: function() {
+      this.growthDistance = document.getElementById("optionsAreaGrowth").value;
   },
   
   startThinking: function() {
@@ -110,7 +117,7 @@ var targetpos = Ext.extend(gxp.plugins.Tool, {
    */
   queuedTargetPositions: [],
   /** Distance to grow the polygon by each interval */
-  growthDistance: 5,
+  growthDistance: 20,
   /** Time (ms) between each growth interval */
   growthSpeed: 200,
   /** Number of quadrants to use when rounding corners, low number means no smoothing */

@@ -9,6 +9,8 @@
  * @require gpigf/Tool.js
  */
 
+var roadGrowth = 20;
+
 var obstacleLayerStyle = OpenLayers.Util.applyDefaults(obstacleLayerStyle, OpenLayers.Feature.Vector.style['default']);
 obstacleLayerStyle.fillColor = "#8eafbc";
 obstacleLayerStyle.strokeColor = '#5e8d9f';
@@ -69,6 +71,11 @@ var envObstacles = Ext.extend(gpigf.plugins.Tool, {
                     })
                 }, actionDefaults))
             ]);
+            
+            document.getElementById("optionsSaveBtn").addEventListener("click", function() {
+                roadGrowth = document.getElementById("optionsRoadGrowth").value;
+            });
+            
         }, this);
         
         this.registerThinkCallback({ 
@@ -109,8 +116,8 @@ var envObstacles = Ext.extend(gpigf.plugins.Tool, {
         ).configure({
             inputs: {
                 target_areas: polys,
-                road_growth: 20,
-                ext_target_area: 50
+                road_growth: roadGrowth,
+                ext_target_area: roadGrowth * 2
             }
         }).output();
     },

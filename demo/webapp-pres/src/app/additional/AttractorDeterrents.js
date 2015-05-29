@@ -8,6 +8,9 @@
  * @require OpenLayers/WPSClient.js
  */
 
+var attractorGrowth = 10;
+var deterrantRange = 500;
+
 var deterrantsLayerStyle = OpenLayers.Util.applyDefaults(deterrantsLayerStyle, OpenLayers.Feature.Vector.style['default']);
 deterrantsLayerStyle.fillColor = "#ff6166";
 deterrantsLayerStyle.strokeColor = '#ff2e35';
@@ -85,6 +88,12 @@ var attractorsDeterrants = Ext.extend(gpigf.plugins.Tool, {
                     })
                 }, actionDefaults))
             ]);
+            
+            document.getElementById("optionsSaveBtn").addEventListener("click", function() {
+                attractorGrowth = document.getElementById("optionsAttrGrowth").value;
+                deterrantRange = document.getElementById("optionsDeterRange").value;
+            });
+            
         }, this);
     },
     
@@ -142,7 +151,7 @@ var attractorsDeterrants = Ext.extend(gpigf.plugins.Tool, {
             inputs: {
                 polygon: polys,
                 points: attractors,
-                buffer: 10
+                buffer: attractorGrowth
             }
         }).output();
     },
@@ -155,7 +164,7 @@ var attractorsDeterrants = Ext.extend(gpigf.plugins.Tool, {
                 polygon: polys,
                 points: detterants,
                 buffer: this.getGrowthDistance() / 2,
-                minLength: 500,
+                minLength: deterrantRange
             }
         }).output();
     }

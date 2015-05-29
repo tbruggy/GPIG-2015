@@ -23,6 +23,9 @@
         <!-- gxp resources -->
         <link rel="stylesheet" type="text/css" href="src/gxp/theme/all.css">
         
+        <!-- files for options menu -->
+        <link rel="stylesheet" type="text/css" href="theme/app/options.css">
+        <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
 
         <!-- app resources -->
         <link rel="stylesheet" type="text/css" href="theme/app/style.css">
@@ -32,5 +35,51 @@
             OpenLayers.ImgPath = "externals/openlayers/img/";
         </script>
     </head>
-    <body></body>
+    <body>
+    
+        <div id='optionsForm' class='hidden'>
+            <div class='menu'>
+                <p>Options</p>
+                <button onClick="top.document.getElementById('optionsForm').className += ' hidden';">X</button>
+            </div>
+            <ul class='optionsList'>
+                <li>
+                    <h3>Target Position Calculator</h3>
+                </li>
+                <li>
+                    <label>Area Growth</label>
+                    <input type='number' id='optionsAreaGrowth' value='10' min='0' max='99'>
+                </li>
+                <li>
+                    <h3>Environmental Obstacles</h3>
+                </li>
+                <li>
+                    <label>Road Growth</label>
+                    <input type='number' id='optionsRoadGrowth' value='20' min='0' max='99'>
+                </li>
+                <li>
+                    <h3>Attractors & Deterrants</h3>
+                </li>
+                <li>
+                    <label>Attractor Growth</label>
+                    <input type='number' id='optionsAttrGrowth' value='10' min='0' max='99'>
+                </li>
+                <li>
+                    <label>Deterrant Range</label>
+                    <input type='number' id='optionsDeterRange' value='500' min='0' max='999'>
+                </li>
+                <li>
+                    <h3>Agent Tracking</h3>
+                </li>
+                <li>
+                    <label>Agent Vision</label>
+                    <input type='number' id='optionsAgentRange' value='50' min='0' max='99'>
+                </li>
+                <li>
+                    <button id='optionsSaveBtn' onClick="top.document.getElementById('optionsForm').className += ' hidden';">Save Options</button>
+                </li>
+            </ul>
+        </div>
+    
+    </body>
 </html>

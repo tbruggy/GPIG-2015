@@ -11,6 +11,7 @@
  * @require core/PossibleTargetPositions.js
  * @require additional/EnvObstacles.js
  * @require additional/AttractorDeterrents.js
+ * @require additional/PluginOptions.js
  * require additional/AgentPushPop.js
  */
 
@@ -35,6 +36,10 @@ var app = new gxp.Viewer({
         ptype: "app_attractor_deterrants",
         id: "attractor_deterrants",
         target_pos: "possible-target-positions",
+      },
+      { 
+        ptype: "app_plugin_options",
+        id: "plugin_options",
       }/*,
       { 
         ptype: "app_core_agentpushpop",
