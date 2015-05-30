@@ -128,45 +128,49 @@ var attractorsDeterrants = Ext.extend(gpigf.plugins.Tool, {
     think: function() {
         if (this.attractors.length > 0) {
           this.queueFeatureAddition({
+              server: 'local', 
+              process: 'gpigf:addAttractor',
               func: this.processAttractors,
-                data: this.attractors,
-               scope: this
-              
+              data: this.attractors,
+              scope: this
           });
         }
          
         if (this.deterrants.length > 0) {
           this.queueFeatureAddition({
+              server: 'local', 
+              process: 'gpigf:addDeterrant',
               func: this.processDeterrents,
               data: this.deterrants,
-              scope: this
+              scope: this,
+              priority: -1
           });
         }
     },
 
-    processAttractors: function(polys, attractors) {
-        return this.wpsClient.getProcess(
-            'local', 'gpigf:addAttractor'
-        ).configure({
+    processAttractors: function(wps, wps_chain, attractors) {
+        wps.configure({
             inputs: {
-                polygon: polys,
+                polygon: wps_chain.output(),
                 points: attractors,
                 buffer: attractorGrowth
             }
-        }).output();
+        });
+        
+        return wps;
     },
     
-    processDeterrents: function(polys, detterants) {
-        return this.wpsClient.getProcess(
-            'local', 'gpigf:addDeterrant'
-        ).configure({
+    processDeterrents: function(wps, wps_chain, detterants) {
+        wps.configure({
             inputs: {
-                polygon: polys,
+                polygon: wps_chain.output(),
                 points: detterants,
                 buffer: this.getGrowthDistance() / 2,
                 minLength: deterrantRange
             }
-        }).output();
+        });
+        
+        return wps;
     }
     
 });

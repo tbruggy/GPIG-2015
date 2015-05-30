@@ -169,8 +169,11 @@ var agenttracker = Ext.extend(gpigf.plugins.Tool, {
   think: function() {
     if (this.agentsArray.length > 0) {
       this.queueFeatureAddition({
-        func: this.dig,
-        scope: this
+          server: 'local', 
+          process: 'gpigf:agentDigArea',
+          func: this.dig,
+          scope: this,
+          priority: -1
       });
     }
   },
@@ -212,20 +215,20 @@ var agenttracker = Ext.extend(gpigf.plugins.Tool, {
   
   agentVision: 50,
   
-  dig: function(polys, data) {
+  dig: function(wps, wps_chain, data) {
     if (!this.digPending) {
       // Dirty hack to keep the area around an agent clear
       // note that previous_positions == new_positions
-      return this.wpsClient.getProcess(
-        'local', 'gpigf:agentDigArea'
-      ).configure({
+      wps.configure({
         inputs: {
-          target_areas: polys,
+          target_areas: wps_chain.output(),
           previous_positions: this.agentsArray,
           new_positions: this.agentsArray,
           agent_vision: this.agentVision
         }
-      }).output();
+      });
+      
+      return wps;
     }
     
     this.digPending = false;
@@ -233,16 +236,16 @@ var agenttracker = Ext.extend(gpigf.plugins.Tool, {
     this.agentLayer.removeAllFeatures();
     this.agentLayer.addFeatures(this.agentsArray);
     
-    return this.wpsClient.getProcess(
-      'local', 'gpigf:agentDigArea'
-    ).configure({
+    wps.configure({
       inputs: {
-        target_areas: polys,
+        target_areas: wps_chain.output(),
         previous_positions: this.lastArray,
         new_positions: this.agentsArray,
         agent_vision: this.agentVision
       }
-    }).output();
+    });
+    
+    return wps;
   },
   
   poppedResult: function(outputs) {

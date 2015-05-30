@@ -8,9 +8,13 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.PrecisionModel;
 import com.vividsolutions.jts.geom.util.LineStringExtracter;
 import com.vividsolutions.jts.operation.polygonize.Polygonizer;
+import com.vividsolutions.jts.precision.GeometryPrecisionReducer;
+import com.vividsolutions.jts.simplify.DouglasPeuckerSimplifier;
 
+import org.geotools.geometry.jts.JTS;
 import org.geotools.process.factory.DescribeParameter;
 import org.geotools.process.factory.DescribeProcess;
 import org.geotools.process.factory.DescribeResult;
@@ -27,14 +31,23 @@ public class TargetPositionsProcessor extends StaticMethodsProcessFactory<Target
 	@DescribeProcess(title = "processTargetPositions", description = "Updates the area of possible positions for a target")
 	@DescribeResult(description = "New target area geometries")
 	public static GeometryCollection processTargetPositions(
-			@DescribeParameter(name = "target_areas", description = "Current possible target positions") GeometryCollection target_areas) 
+			@DescribeParameter(name = "target_areas", description = "Current possible target positions") GeometryCollection target_areas,
+			@DescribeParameter(name = "precision", description = "Precision value to use on the final polygons") double precision) 
 					throws IllegalArgumentException {
 
 		// This is still important to avoid errors in the js when adding the geometries to layers
 		if (target_areas == null || target_areas.getNumGeometries() == 0)
 			throw new IllegalArgumentException("target_areas is null or zero in size");
+		
+		List output = new ArrayList();
+		for (int i = 0; i < target_areas.getNumGeometries(); ++i) {
+			Geometry target_area = target_areas.getGeometryN(i);
+			Geometry modified_area = DouglasPeuckerSimplifier.simplify(target_area, precision);
 
-		return target_areas;
+			output.add(modified_area);
+		}
+		
+		return target_areas.getGeometryN(0).getFactory().createGeometryCollection(GeometryFactory.toGeometryArray(output));
 	}
 
 	@DescribeProcess(title = "growTargetPositions", description = "Grows the polygons by a given amount")

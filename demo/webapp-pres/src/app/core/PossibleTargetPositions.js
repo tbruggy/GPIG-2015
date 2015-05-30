@@ -4,6 +4,7 @@
  * @require OpenLayers/Control/DrawFeature.js
  * @require OpenLayers/Handler/Polygon.js
  * @require OpenLayers/WPSClient.js
+ * @require OpenLayers/Util.js
  */
 
 /**
@@ -41,6 +42,8 @@ var targetpos = Ext.extend(gxp.plugins.Tool, {
         local: '/geoserver/wps'
       }
     });
+    
+    OpenLayers.Util.precision = 3;
 
     // Add action buttons when the viewer is ready
     target.on('ready', function() {
@@ -126,36 +129,34 @@ var targetpos = Ext.extend(gxp.plugins.Tool, {
    */
   queuedTargetPositions: [],
   /** Distance to grow the polygon by each interval */
-  growthDistance: 20,
+  growthDistance: 2,
   /** Time (ms) between each growth interval */
   growthSpeed: 200,
   /** Number of quadrants to use when rounding corners, low number means no smoothing */
   growthSegments: 0,
-  /** Interval containing method to execute at each growth */
-  growthInterval: null,
   /** Used to prevent another service request from being sent before the previous has finished */
   processingServiceRequest: false,
+  /** The precision of the final polygons after features have been applied - larger number means simplier geometry. Cannot be < 0 */
+  precision: 5.0,
   
   /**
    * The grow polygons service.
    * Function grows a polygon by a set amount over the course of time.
    *
-   * @param polys   A set of polygons to grow
+   * @param chain   The process chain that calculates the target areas as a set of polygons
    * @param unused  Not used, null value
    * @return        New set of polygons with increased size
    */
-  growPolygons: function(polys, unused) {
-    var self = this;
-    
-    return this.wpsClient.getProcess(
-      'local', 'gpigf:growTargetPositions'
-    ).configure({
+  growPolygons: function(wps, polys, unused) {
+    wps.configure({
       inputs: {
         target_areas: polys,
         growth_distance: this.growthDistance, 
         growth_segments: this.growthSegments 
       }
-    }).output();
+    });
+    
+    return wps;
   },
   
   /** Called when a polygon is added to the layer by the user */
@@ -191,6 +192,7 @@ var targetpos = Ext.extend(gxp.plugins.Tool, {
   think: function() {
     if (!this.simulate)
       return;
+    
     /**
      * Sometimes service requests can take a while to process
      * So we do not want to 'think' again before the previous request has finished
@@ -225,13 +227,6 @@ var targetpos = Ext.extend(gxp.plugins.Tool, {
       func();
     }
     
-    // Add self to the top of the queue
-    this.queueFeatureAddition({
-      func: this.growPolygons, 
-      scope: this,
-      data: null
-    });
-    
     this.chainFeaturesFromQueue();
   },
   
@@ -262,27 +257,50 @@ var targetpos = Ext.extend(gxp.plugins.Tool, {
    * @return        True if there are more features in the queue to process. False otherwise
    */
   chainFeaturesFromQueue: function() {
-    if (this.featureQueue.length > 0) {
-      var featureservice = this.featureQueue.pop();
+    // Sort by priority
+    this.featureQueue.sort(function(a, b) {
+      return (a.priority - b.priority);
+    });
+    
+    // Always grow first
+    this.featureQueue.push({
+      server: 'local', 
+      process: 'gpigf:growTargetPositions',
+      func: this.growPolygons,
+      data: null,
+      scope: this
+    });
+    
+    // Grow expects wps to be polys, not a WPSProcssChain
+    var wps = this.targetPositions;
+    
+    while (this.featureQueue.length > 0) {
+      var f = this.featureQueue.pop();
       
-      var func = (featureservice.scope) ?
-                  OpenLayers.Function.bind(featureservice.func, featureservice.scope) :
-                  featureservice.func;
+      // Save the previous wps
+      var chain_wps = wps;
+      // Get the next WPSProcess
+      wps = this.wpsClient.getProcess(f.server, f.process);
       
-      this.wpsClient.execute({
-        server: 'local',
-        process: 'gpigf:processTargetPositions',
-        inputs: { 
-            target_areas: func(this.targetPositions, featureservice.data)
-        },
-        success: this.addResult,
-        scope: this
-      });
       
-      return true;
+      var func = (f.scope) ?
+                  OpenLayers.Function.bind(f.func, f.scope) :
+                  f.func;
+
+      // Configure process
+      wps = func(wps, chain_wps, f.data);
     }
     
-    return false;
+    this.wpsClient.execute({
+      server: 'local',
+      process: 'gpigf:processTargetPositions',
+      inputs: { 
+          target_areas: wps.output(),
+          precision: this.precision
+      },
+      success: this.addResult,
+      scope: this
+    });
   },
   
   /** An array of feature services to executed. Modified through queueFeatureAddition and chainFeaturesFromQueue */
@@ -301,6 +319,7 @@ var targetpos = Ext.extend(gxp.plugins.Tool, {
    * @noreturn
    */
   queueFeatureAddition: function(f) {
+    f.priority = f.priority || 0;
     this.featureQueue.push(f);
   },
   
@@ -327,7 +346,9 @@ var targetpos = Ext.extend(gxp.plugins.Tool, {
        * It could also mean that your OpenGeo suite installation has broken. It will require a full reinstall to fix this
        * (remember to delete the Program Data folder when you uninstall)
        */
-      throw "Bad result from service(s)";
+      this.processingServiceRequest = false;
+      console.log("Bad result from service(s), ignoring and continuing");
+      return;
     }
     
     // Remove the current polygons
@@ -346,10 +367,8 @@ var targetpos = Ext.extend(gxp.plugins.Tool, {
     // Add the new collection of polygons to the layer.
     this.layer.addFeatures(this.targetPositions);
     
-    if (!this.chainFeaturesFromQueue()) {
-      // Queue is empty, set to false to allow the next think to execute
-      this.processingServiceRequest = false;
-    }
+    // Allow the next chain to be processed
+    this.processingServiceRequest = false;
   },
     
   getGrowthSpeed: function() {

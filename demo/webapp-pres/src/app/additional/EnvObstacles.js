@@ -9,7 +9,7 @@
  * @require gpigf/Tool.js
  */
 
-var roadGrowth = 20;
+var roadGrowth = 4;
 
 var obstacleLayerStyle = OpenLayers.Util.applyDefaults(obstacleLayerStyle, OpenLayers.Feature.Vector.style['default']);
 obstacleLayerStyle.fillColor = "#8eafbc";
@@ -104,6 +104,8 @@ var envObstacles = Ext.extend(gpigf.plugins.Tool, {
     think: function() {
         if (this.drawAlongRoads) {
             this.queueFeatureAddition({
+                server: 'local', 
+                process: 'gpigf:processRoads',
                 func: this.processRoads,
                 scope: this
             });
@@ -111,34 +113,37 @@ var envObstacles = Ext.extend(gpigf.plugins.Tool, {
         
         if (this.environmentalObstacles.length > 0) {
             this.queueFeatureAddition({
-                func: this.processEnvironmentalObstacles,
-                data: this.environmentalObstacles,
-                scope: this
+              server: 'local', 
+              process: 'gpigf:processEnvObstacles',
+              func: this.processEnvironmentalObstacles,
+              data: this.environmentalObstacles,
+              scope: this,
+              priority: -1
             });
         }
     },
     
-    processRoads: function(polys, data) {
-        return this.wpsClient.getProcess(
-            'local', 'gpigf:processRoads'
-        ).configure({
+    processRoads: function(wps, wps_chain, data) {
+        wps.configure({
             inputs: {
-                target_areas: polys,
+                target_areas: wps_chain.output(),
                 road_growth: roadGrowth,
                 ext_target_area: roadGrowth * 2
             }
-        }).output();
+        });
+        
+        return wps;
     },
     
-    processEnvironmentalObstacles: function(polys, obstacles) {
-        return this.wpsClient.getProcess(
-            'local', 'gpigf:processEnvObstacles'
-        ).configure({
+    processEnvironmentalObstacles: function(wps, wps_chain, obstacles) {
+        wps.configure({
             inputs: {
-                target_areas: polys,
+                target_areas: wps_chain.output(),
                 env_obstacles: obstacles
             }
-        }).output();
+        });
+        
+        return wps;
     }
     
 });

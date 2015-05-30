@@ -100,7 +100,8 @@ public class EnvObstacles extends StaticMethodsProcessFactory<EnvObstacles>
 			}
 			
 			output.add(area);
-			geometryOutput.add(toGeometryCollection(area, output).union());
+			// buffer(0.0) achieves the same thing as union() but is faster
+			geometryOutput.add(toGeometryCollection(area, output).buffer(0.0));
 		}
 		
 		return toGeometryCollection(target_areas, geometryOutput);
@@ -177,7 +178,7 @@ public class EnvObstacles extends StaticMethodsProcessFactory<EnvObstacles>
 	private static void startLogger() {
 		try {
 			if (out == null) {
-				out = new PrintWriter(new BufferedWriter(new FileWriter("C:\\Users\\tbrug_000\\Desktop\\out.log", false)), true);
+				out = new PrintWriter(new BufferedWriter(new FileWriter("C:\\Users\\Paul\\Desktop\\out.log", false)), true);
 			}
 		} catch (IOException ex) {
 			ex.printStackTrace();
