@@ -8,7 +8,7 @@
  * @require OpenLayers/WPSClient.js
  */
 
-var attractorGrowth = 2;
+var attractorGrowth = 4;
 var deterrantRange = 400;
 
 var deterrantsLayerStyle = OpenLayers.Util.applyDefaults(deterrantsLayerStyle, OpenLayers.Feature.Vector.style['default']);
@@ -27,6 +27,7 @@ var attractorsDeterrants = Ext.extend(gpigf.plugins.Tool, {
 
     ptype: 'app_attractor_deterrants',
     registered: false,
+    attractor_throttle: 0,
     attractors : [],
     deterrants : [],
     
@@ -128,13 +129,15 @@ var attractorsDeterrants = Ext.extend(gpigf.plugins.Tool, {
 
     think: function() {
         if (this.attractors.length > 0) {
-          this.queueFeatureAddition({
-              server: 'local', 
-              process: 'gpigf:addAttractor',
-              func: this.processAttractors,
-              data: this.attractors,
-              scope: this
-          });
+          if (this.attractor_throttle++ % 2 == 0) {
+            this.queueFeatureAddition({
+                server: 'local', 
+                process: 'gpigf:addAttractor',
+                func: this.processAttractors,
+                data: this.attractors,
+                scope: this
+            });
+          }
         }
          
         if (this.deterrants.length > 0) {
