@@ -40,7 +40,7 @@ public class AgentStore extends StaticMethodsProcessFactory<AgentStore> {
 		
 		try {
 			if (out == null) {
-				out = new PrintWriter(new BufferedWriter(new FileWriter("C:\\Users\\Paul\\Desktop\\out3.log", false)), true);
+				out = new PrintWriter(new BufferedWriter(new FileWriter("C:\\out3.log", false)), true);
 			}
 		} catch (IOException ex) {
 			ex.printStackTrace();

@@ -38,7 +38,7 @@ public class PushPop extends StaticMethodsProcessFactory<PushPop> {
 		
 		try {
 			if (out == null) {
-				out = new PrintWriter(new BufferedWriter(new FileWriter("C:\\Users\\Paul\\Desktop\\out.log", false)), true);
+				out = new PrintWriter(new BufferedWriter(new FileWriter("C:\\out.log", false)), true);
 			}
 		} catch (IOException ex) {
 			ex.printStackTrace(); 
