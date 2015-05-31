@@ -9,7 +9,7 @@
  * @require gpigf/Tool.js
  */
 
-var roadGrowth = 4;
+var roadGrowth = 2;
 
 var obstacleLayerStyle = OpenLayers.Util.applyDefaults(obstacleLayerStyle, OpenLayers.Feature.Vector.style['default']);
 obstacleLayerStyle.fillColor = "#8eafbc";
@@ -63,7 +63,7 @@ var envObstacles = Ext.extend(gpigf.plugins.Tool, {
                 new GeoExt.Action(Ext.apply({
                     text: 'Grow along Roads',
                     enableToggle: true,
-                    toggleGroup: this.ptype,
+                    toggleGroup: 'app-envobs-growalongroads',
                     allowDepress: true,
                     control: new OpenLayers.Control.Button({
                         trigger: OpenLayers.Function.bind(this.toggleRoads, this)
@@ -72,7 +72,7 @@ var envObstacles = Ext.extend(gpigf.plugins.Tool, {
                 new GeoExt.Action(Ext.apply({
                     text: 'Draw Environmetal Obstacle',
                     enableToggle: true,
-                    toggleGroup: this.ptype,
+                    toggleGroup: 'app-toolbar',
                     allowDepress: true,
                     control: this.drawControl,
                 }, actionDefaults))

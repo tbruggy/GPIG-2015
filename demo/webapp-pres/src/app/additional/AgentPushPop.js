@@ -11,6 +11,8 @@
  * @require core/PossibleTargetPositions.js
  */
 
+var tablename = "agentsave"; 
+ 
 var agentpushpop = Ext.extend(gpigf.plugins.Tool, {
 
   ptype: 'app_core_agentpushpop',
@@ -117,7 +119,8 @@ var agentpushpop = Ext.extend(gpigf.plugins.Tool, {
       server: 'local',
       process: 'gpigf:pushAgents',
       inputs: {
-        agents: this.agentsArray
+        agents: this.agentsArray,
+        tablename: tablename,
       },
     });
     
@@ -132,7 +135,8 @@ var agentpushpop = Ext.extend(gpigf.plugins.Tool, {
       server: 'local',
       process: 'gpigf:popPosition',
       inputs: {
-        posNum: this.positionNumber
+        posNum: this.positionNumber,
+        tablename: tablename,
       },
       success: this.poppedResult,
       scope: this
@@ -146,7 +150,8 @@ var agentpushpop = Ext.extend(gpigf.plugins.Tool, {
       server: 'local',
       process: 'gpigf:popPosition',
       inputs: {
-        posNum: this.positionNumber
+        posNum: this.positionNumber,
+        tablename: tablename,
       },
       success: this.poppedResult,
       scope: this

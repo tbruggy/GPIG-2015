@@ -82,18 +82,17 @@ var targetpos = Ext.extend(gxp.plugins.Tool, {
         new GeoExt.Action(Ext.apply({
           text: 'Draw Possible Target Area',
           control: this.drawControl,
+          toggleGroup: 'app-toolbar',
           allowDepress: true
         }, actionDefaults)),
         new GeoExt.Action(Ext.apply({
           text: 'Start',
-          enableToggle: true,
           toggleGroup: this.ptype,
           allowDepress: false,
           control: this.startBtn
         }, actionDefaults)),
         new GeoExt.Action(Ext.apply({
           text: 'Stop',
-          enableToggle: true,
           toggleGroup: this.ptype,
           allowDepress: false,
           control: this.stopBtn
@@ -129,15 +128,15 @@ var targetpos = Ext.extend(gxp.plugins.Tool, {
    */
   queuedTargetPositions: [],
   /** Distance to grow the polygon by each interval */
-  growthDistance: 2,
+  growthDistance: 1,
   /** Time (ms) between each growth interval */
-  growthSpeed: 200,
+  growthSpeed: 100,
   /** Number of quadrants to use when rounding corners, low number means no smoothing */
   growthSegments: 0,
   /** Used to prevent another service request from being sent before the previous has finished */
   processingServiceRequest: false,
   /** The precision of the final polygons after features have been applied - larger number means simplier geometry. Cannot be < 0 */
-  precision: 5.0,
+  precision: 3.0,
   
   /**
    * The grow polygons service.

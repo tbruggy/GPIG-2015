@@ -47,11 +47,11 @@ var app = new gxp.Viewer({
     ptype: "app_attractor_deterrants",
     id: "attractor_deterrants",
     actionTarget: "mymap.tbar",
-  },{ 
+  }, { 
     ptype: "app_plugin_options",
     id: "plugin_options",
     actionTarget: "mymap.bbar",
-  }, /*{ 
+  }/*, { 
     ptype: "app_core_agentpushpop",
     id: "core_agentpushpop",
   }*/],

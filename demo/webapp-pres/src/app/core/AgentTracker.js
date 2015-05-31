@@ -13,13 +13,14 @@
  * @require core/PossibleTargetPositions.js
  */
 
+var tablename = "agentsave"; 
+
 var agenttracker = Ext.extend(gpigf.plugins.Tool, {
 
   ptype: 'app_core_agenttracker',
   
-  pushAgentsBtn: null,
   registered: false,
-  throttle: 0,
+  toggleAgentsBtn: null,
   
   /** Initialization of the plugin */
   init: function(target) {
@@ -50,27 +51,37 @@ var agenttracker = Ext.extend(gpigf.plugins.Tool, {
         pointRadius: 15
       };
       
-      this.pushAgentsBtn = new OpenLayers.Control.Button({
-        trigger: OpenLayers.Function.bind(this.pushAgents, this)
-      });
-      
       // Some defaults
       var actionDefaults = {
         map: target.mapPanel.map,
-        enableToggle: true,
-        allowDepress: true
       };
+      
+      this.toggleAgentsBtn = new GeoExt.Action(Ext.apply({
+        text: 'Agents: Team 1',
+        toggleGroup: 'app-agents-teamtoggle',
+        enableToggle: false,
+        allowDepress: false,
+        control: new OpenLayers.Control.Button({
+          trigger: OpenLayers.Function.bind(this.toggleAgents, this)
+        })
+      }, actionDefaults)),
+        
       this.addActions([
         new GeoExt.Action(Ext.apply({
           text: 'Start Agents',
           toggleGroup: this.ptype,
+          enableToggle: true,
+          allowDepress: true,
           control: new OpenLayers.Control.Button({
             trigger: OpenLayers.Function.bind(this.startAgents, this)
           })
         }, actionDefaults)),
+        this.toggleAgentsBtn,
         new GeoExt.Action(Ext.apply({
           text: 'Get Agent Info',
-          toggleGroup: 'app_core_agenttracker-getinfo',
+          enableToggle: true,
+          allowDepress: true,
+          toggleGroup: 'app-core-agents-getinfo',
           control: new OpenLayers.Control.SelectFeature(
             this.agentLayer, {
               hover: true,
@@ -83,6 +94,16 @@ var agenttracker = Ext.extend(gpigf.plugins.Tool, {
       document.getElementById("optionsSaveBtn").addEventListener("click", OpenLayers.Function.bind(this.updateAgentVision, this));    
         
     }, this);
+  },
+  
+  toggleAgents: function() {
+    if (tablename == "agentsave") {
+      this.toggleAgentsBtn.setText("Agents: Team 2");
+      tablename = "agentsave2";
+    } else {
+      this.toggleAgentsBtn.setText("Agents: Team 1");
+      tablename = "agentsave";
+    }
   },
     
   updateAgentVision: function() {
@@ -101,7 +122,8 @@ var agenttracker = Ext.extend(gpigf.plugins.Tool, {
         server: 'local',
         process: 'gpigf:popPosition',
         inputs: {
-          posNum: this.positionNumber
+          posNum: this.positionNumber,
+          tablename: tablename,
         },
         success: this.initFirstAgents,
         scope: this
@@ -148,8 +170,10 @@ var agenttracker = Ext.extend(gpigf.plugins.Tool, {
     // Warning this is duped below!
     this.agentInfo[this.agentsArray[0].id] = { name: "Bob Marley", v: "Tank", vis_range: "100", status: "Jammin" }
     this.agentInfo[this.agentsArray[1].id] = { name: "Mr T", v: "Smartcar", vis_range: "100", status: "Pityin fools" }
-    this.agentInfo[this.agentsArray[2].id] = { name: "Iron Man", v: "Suit", vis_range: "100", status: "Philanthropistic" }
-    this.agentInfo[this.agentsArray[3].id] = { name: "Team F", v: "Limo", vis_range: "100", status: "Getting firsts in our degrees" }
+    if (tablename == "agentsave") {
+      this.agentInfo[this.agentsArray[2].id] = { name: "Iron Man", v: "Suit", vis_range: "100", status: "Philanthropistic" }
+      this.agentInfo[this.agentsArray[3].id] = { name: "Team F", v: "Limo", vis_range: "100", status: "Getting firsts in our degrees" }
+    }
     
     this.agentLayer.removeAllFeatures();
     this.agentLayer.addFeatures(this.agentsArray);
@@ -193,7 +217,8 @@ var agenttracker = Ext.extend(gpigf.plugins.Tool, {
       server: 'local',
       process: 'gpigf:popPosition',
       inputs: {
-        posNum: this.positionNumber
+        posNum: this.positionNumber,
+        tablename: tablename,
       },
       success: this.poppedResult,
       scope: this
@@ -260,8 +285,10 @@ var agenttracker = Ext.extend(gpigf.plugins.Tool, {
     // Warning this is duped above!
     this.agentInfo[this.agentsArray[0].id] = { name: "Bob Marley", v: "Tank", vis_range: "100", status: "Jammin" }
     this.agentInfo[this.agentsArray[1].id] = { name: "Mr T", v: "Smartcar", vis_range: "100", status: "Pityin fools" }
-    this.agentInfo[this.agentsArray[2].id] = { name: "Iron Man", v: "Suit", vis_range: "100", status: "Philanthropistic" }
-    this.agentInfo[this.agentsArray[3].id] = { name: "Team F", v: "Limo", vis_range: "100", status: "Getting firsts in our degrees" }
+    if (tablename == "agentsave") {
+      this.agentInfo[this.agentsArray[2].id] = { name: "Iron Man", v: "Suit", vis_range: "100", status: "Philanthropistic" }
+      this.agentInfo[this.agentsArray[3].id] = { name: "Team F", v: "Limo", vis_range: "100", status: "Getting firsts in our degrees" }
+    }
     
     this.getAgentsPending = false;
     this.digPending = true;

@@ -69,13 +69,14 @@ public class AgentStore extends StaticMethodsProcessFactory<AgentStore> {
 	@DescribeProcess(title = "pushAgents", description = "Pushes agents to the db")
 	@DescribeResult(description = "push geometries")
 	public static GeometryCollection pushAgents(
-			@DescribeParameter(name = "agents", description = "Agent geometries") GeometryCollection agents) {
+			@DescribeParameter(name = "agents", description = "Agent geometries") GeometryCollection agents,
+			@DescribeParameter(name = "tablename", description = "Name of table in DB") String tablename) {
 
 		if (agents == null || agents.getNumGeometries() == 0)
 			throw new IllegalArgumentException("agents is null or zero in size");
 		
 		try {
-			PreparedStatement s = conn.prepareStatement("INSERT INTO agentsave (srid, agents) VALUES (?, ?)");
+			PreparedStatement s = conn.prepareStatement(String.format("INSERT INTO %s (srid, agents) VALUES (?, ?)", tablename));
 			
 			
 			//for (int i = 0; i < agents.getNumGeometries(); ++i) {
@@ -104,7 +105,8 @@ public class AgentStore extends StaticMethodsProcessFactory<AgentStore> {
 	@DescribeProcess(title = "popPosition", description = "Pops a specific position of agents from the db")
 	@DescribeResult(description = "popped geometry")
 	public static GeometryCollection popPosition(
-			@DescribeParameter(name = "posNum", description = "The position number") int posNum) {
+			@DescribeParameter(name = "posNum", description = "The position number") int posNum,
+			@DescribeParameter(name = "tablename", description = "Name of table in DB") String tablename) {
 
 		if (posNum <= 0)
 			throw new IllegalArgumentException("posNum is not positive - numbers start at 1");
@@ -114,7 +116,7 @@ public class AgentStore extends StaticMethodsProcessFactory<AgentStore> {
 
 		try {
 			Statement qs = conn.createStatement();
-			ResultSet r = qs.executeQuery("SELECT srid,st_astext(agents) as poly FROM agentsave");
+			ResultSet r = qs.executeQuery(String.format("SELECT srid,st_astext(agents) as poly FROM %s", tablename));
 			
 			while (r.next()) {
 				if (r.getRow() == posNum){
@@ -129,7 +131,7 @@ public class AgentStore extends StaticMethodsProcessFactory<AgentStore> {
 					WKTReader wktReader = new WKTReader();
 					Geometry geo = wktReader.read(wkt);
 		
-					//out.println("read from db : " + geo.toText());
+					out.println("read from db : " + geo.toText());
 					//output.add(geo);
 					return (GeometryCollection) geo;
 				}
@@ -149,7 +151,8 @@ public class AgentStore extends StaticMethodsProcessFactory<AgentStore> {
 	@DescribeProcess(title = "popAgents", description = "Pops agents from the db")
 	@DescribeResult(description = "popped geometry")
 	public static GeometryCollection popAgents(
-			@DescribeParameter(name = "agents", description = "Agent geometries") GeometryCollection agents) {
+			@DescribeParameter(name = "agents", description = "Agent geometries") GeometryCollection agents,
+			@DescribeParameter(name = "tablename", description = "Name of table in DB") String tablename) {
 
 		if (agents == null || agents.getNumGeometries() == 0)
 			throw new IllegalArgumentException("agents is null or zero in size");
@@ -159,7 +162,7 @@ public class AgentStore extends StaticMethodsProcessFactory<AgentStore> {
 
 		try {
 			Statement qs = conn.createStatement();
-			ResultSet r = qs.executeQuery("SELECT srid,st_astext(agents) as poly FROM agentsave");
+			ResultSet r = qs.executeQuery(String.format("SELECT srid,st_astext(agents) as poly FROM %s", tablename));
 			
 			while (r.next()) {
 				if (f == null) {

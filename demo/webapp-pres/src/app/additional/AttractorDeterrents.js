@@ -8,8 +8,8 @@
  * @require OpenLayers/WPSClient.js
  */
 
-var attractorGrowth = 10;
-var deterrantRange = 500;
+var attractorGrowth = 2;
+var deterrantRange = 400;
 
 var deterrantsLayerStyle = OpenLayers.Util.applyDefaults(deterrantsLayerStyle, OpenLayers.Feature.Vector.style['default']);
 deterrantsLayerStyle.fillColor = "#ff6166";
@@ -62,13 +62,13 @@ var attractorsDeterrants = Ext.extend(gpigf.plugins.Tool, {
             var actionDefaults = {
                 map: target.mapPanel.map,
                 enableToggle: true,
-                toggleGroup: this.ptype,
                 allowDepress: true
             };
             
             this.addActions([
                 new GeoExt.Action(Ext.apply({
                     text: 'Place Attractor',
+                    toggleGroup: 'app-toolbar',
                     control: new OpenLayers.Control.DrawFeature(
                         this.attractorsLayer, OpenLayers.Handler.Point, {
                         eventListeners: {
@@ -79,6 +79,7 @@ var attractorsDeterrants = Ext.extend(gpigf.plugins.Tool, {
                 }, actionDefaults)),
                 new GeoExt.Action(Ext.apply({
                     text: 'Place Deterrant',
+                    toggleGroup: 'app-toolbar',
                     control: new OpenLayers.Control.DrawFeature(
                         this.deterrantsLayer, OpenLayers.Handler.Point, {
                         eventListeners: {
