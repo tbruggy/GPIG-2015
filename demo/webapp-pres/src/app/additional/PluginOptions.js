@@ -37,7 +37,18 @@ var pluginOptions = Ext.extend(gpigf.plugins.Tool, {
                     text: 'Plugin Options',
                     control: new OpenLayers.Control.Button({
                         trigger: OpenLayers.Function.bind(function() {
-                            top.document.getElementById('optionsForm').className = "";
+                            top.document.getElementById('optionsForm').className = "customModal";
+                        }, this)
+                    })
+                }, {})),
+                new GeoExt.Action(Ext.apply({
+                    map: target.mapPanel.map,
+                    enableToggle: false,
+                    allowDepress: false,
+                    text: 'Show Legend',
+                    control: new OpenLayers.Control.Button({
+                        trigger: OpenLayers.Function.bind(function() {
+                            top.document.getElementById('legend').className = "customModal";
                         }, this)
                     })
                 }, {}))

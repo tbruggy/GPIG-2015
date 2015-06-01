@@ -1,0 +1,81 @@
+div#legend {
+    position: absolute;
+    bottom: 40px;
+    right: 6px;
+}
+
+div.customModal {
+    background-color: #f0f0f0;
+    opacity: 0.95;
+    color: #444;
+    font-size: 14px;
+}
+
+h3.customModalTitle {
+    background: #444;
+    padding: 10px 15px;
+    color: #f0f0f0;
+}
+
+h3.customModalTitle > a {
+    float: right;
+    text-decoration: none;
+    color: #f0f0f0;
+}
+
+div#legend h3 > a:hover {
+    cursor: hand;
+}
+
+div#legend ul {
+    padding: 15px;
+}
+
+div#legend ul li {
+    padding: 5px 0; 
+}
+
+div#legend li p { 
+    display: inline-block;
+    width: 190px;
+}
+
+.lCircle {
+	border-radius: 50%;
+	width: 30px;
+	height: 30px; 
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.lSquare {
+    width: 30px;
+	height: 30px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.attractor {
+    background: rgba(119, 221, 136, 0.5);
+    border: 2px solid #3ec354;
+}
+
+.deterrent {
+    background: rgba(255, 97, 102, 0.5);
+    border: 2px solid #ff2e35;
+}
+
+.searchArea {
+    background: rgba(255, 165, 0, 0.5);
+    border: 2px solid #ffa500;
+}
+
+.obstacle {
+    background: rgba(142, 175, 188, 0.5);
+    border: 2px solid #5e8d9f;
+}
+
+.agent {
+    background: rgba(65, 105, 225, 0.75);
+    border: 2px solid #444;
+}

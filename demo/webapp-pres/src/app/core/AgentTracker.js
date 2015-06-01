@@ -17,10 +17,10 @@ var tablename = "agentsave";
 
 var agentLayerStyle = OpenLayers.Util.applyDefaults(agentLayerStyle, OpenLayers.Feature.Vector.style['default']);
 agentLayerStyle.fillColor = "#4169e1";
-agentLayerStyle.strokeColor = '#4169e1';
+agentLayerStyle.strokeColor = '#444';
 agentLayerStyle.strokeWidth = 3;
 agentLayerStyle.pointRadius = 20;
-agentLayerStyle.graphicName = 'triangle';
+agentLayerStyle.fillOpacity = 0.75;
 
 var agenttracker = Ext.extend(gpigf.plugins.Tool, {
 

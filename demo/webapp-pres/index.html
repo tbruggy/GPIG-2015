@@ -29,6 +29,9 @@
         <!-- files for options menu -->
         <link rel="stylesheet" type="text/css" href="theme/app/options.css">
         <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+        
+        <!-- file for legend -->
+        <link rel="stylesheet" type="text/css" href="theme/app/legend.css">
 
         <!-- app resources -->
         <link rel="stylesheet" type="text/css" href="theme/app/style.css">
@@ -40,11 +43,8 @@
     </head>
     <body>
     
-        <div id='optionsForm' class='hidden'>
-            <div class='menu'>
-                <p>Options</p>
-                <button onClick="top.document.getElementById('optionsForm').className += ' hidden';">X</button>
-            </div>
+        <div id='optionsForm' class='customModal hidden'>
+            <h3 class='customModalTitle'>Options<a href='#' onclick="top.document.getElementById('optionsForm').className += ' hidden';">X</a></h3>
             <ul class='optionsList'>
                 <li>
                     <h3>Target Position Calculator</h3>
@@ -81,6 +81,17 @@
                 <li>
                     <button id='optionsSaveBtn' onClick="top.document.getElementById('optionsForm').className += ' hidden';">Save Options</button>
                 </li>
+            </ul>
+        </div>
+        
+        <div id='legend' class='customModal hidden'>
+            <h3 class='customModalTitle'>Legend <a href='#' onclick="top.document.getElementById('legend').className += ' hidden';">X</a></h3>
+            <ul>
+                <li><p>Search Area:</p><div class='lSquare searchArea'/></li>
+                <li><p>Atrractor:</p><div class='lCircle attractor'/></li>
+                <li><p>Detterent:</p><div class='lCircle deterrent'/></li>
+                <li><p>Agent:</p><div class='lCircle agent'/></li>
+                <li><p>Environmental Obstacle:</p><div class='lSquare obstacle'/></li>
             </ul>
         </div>
     
