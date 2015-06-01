@@ -71,7 +71,7 @@ var agenttracker = Ext.extend(gpigf.plugins.Tool, {
         
       this.addActions([
         new GeoExt.Action(Ext.apply({
-          text: 'Start Agents',
+          text: 'Load Agents',
           toggleGroup: this.ptype,
           enableToggle: true,
           allowDepress: true,

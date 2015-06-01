@@ -272,6 +272,8 @@ var targetpos = Ext.extend(gxp.plugins.Tool, {
     
     // Grow expects wps to be polys, not a WPSProcssChain
     var wps = this.targetPositions;
+    var queuelength = this.featureQueue.length;
+    console.log(queuelength);
     
     while (this.featureQueue.length > 0) {
       var f = this.featureQueue.pop();
@@ -295,7 +297,7 @@ var targetpos = Ext.extend(gxp.plugins.Tool, {
       process: 'gpigf:processTargetPositions',
       inputs: { 
           target_areas: wps.output(),
-          precision: this.precision
+          precision: (queuelength > 3 ? this.precision : 0.4)
       },
       success: this.addResult,
       scope: this
