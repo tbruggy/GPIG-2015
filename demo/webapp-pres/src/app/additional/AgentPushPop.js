@@ -10,8 +10,6 @@
  * @require gpigf/Tool.js
  * @require core/PossibleTargetPositions.js
  */
-
-var tablename = "agentsave"; 
  
 var agentpushpop = Ext.extend(gpigf.plugins.Tool, {
 
@@ -79,7 +77,7 @@ var agentpushpop = Ext.extend(gpigf.plugins.Tool, {
           })
         }, actionDefaults)),
         new GeoExt.Action(Ext.apply({
-          text: 'Push Agents Positions to DB',
+          text: 'Push to DB',
           control: this.pushAgentsBtn
         }, actionDefaults))
       ]);
@@ -120,7 +118,7 @@ var agentpushpop = Ext.extend(gpigf.plugins.Tool, {
       process: 'gpigf:pushAgents',
       inputs: {
         agents: this.agentsArray,
-        tablename: tablename,
+        tablename: tablenames[tablenames_i].table,
       },
     });
     
@@ -136,7 +134,7 @@ var agentpushpop = Ext.extend(gpigf.plugins.Tool, {
       process: 'gpigf:popPosition',
       inputs: {
         posNum: this.positionNumber,
-        tablename: tablename,
+        tablename: tablenames[tablenames_i].table,
       },
       success: this.poppedResult,
       scope: this
@@ -151,7 +149,7 @@ var agentpushpop = Ext.extend(gpigf.plugins.Tool, {
       process: 'gpigf:popPosition',
       inputs: {
         posNum: this.positionNumber,
-        tablename: tablename,
+        tablename: tablenames[tablenames_i].table,
       },
       success: this.poppedResult,
       scope: this

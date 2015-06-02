@@ -11,6 +11,18 @@
  
 Ext.namespace("gpigf.plugins");
 
+var tablenames = [{
+  label: "Agents: Team 1",
+  table: "agentsave",
+}, {
+  label: "Agents: Team 2",
+  table: "agentsave2",
+}, {
+  label: "Agents: Team 3",
+  table: "agentsave3",
+}];
+var tablenames_i = 0;
+
 gpigf.plugins.Tool = Ext.extend(gxp.plugins.Tool, {
   
   target_pos: "possible-target-positions",
